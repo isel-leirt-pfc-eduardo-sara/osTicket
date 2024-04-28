@@ -1,0 +1,1342 @@
+openapi: 3.0.1
+info:
+  title: osTicket API
+  description: "The osTicket API is a RESTful web service that allows users to interact
+    programmatically with the osTicket helpdesk system. osTicket is an open-source support
+    ticket system that enables organizations to efficiently manage customer inquiries, issues,
+    and tickets.\n\nThis document provides detailed information about available endpoints,
+    request and response formats, authentication methods, error handling, and best practices
+    for API usage. It serves as a comprehensive resource for developers looking to integrate
+    osTicket with their applications or systems."
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+  version: 1.0.0
+servers:
+  - description: Localhost server for testing
+    url: http://localhost/osticket/api/
+security:
+  - APIKeyAuth: []
+tags:
+    - name: Departments
+    - name: Priorities
+    - name: SLA (Service-Level Agreement)
+    - name: Staff
+    - name: Teams
+    - name: Tickets
+    - name: Topics
+    - name: Users
+paths:
+  /http.php/departments.json:
+    description: This resource handles all department-related operations
+    get:
+      tags:
+        - Departments
+      summary: Get department IDs
+      description: |
+        Retrieves a list of department IDs available in the system.
+
+        Departments represent organizational units within the ticketing system.
+        Each department is identified by a unique ID.
+
+        This endpoint allows clients to fetch the list of available department IDs,
+        which can be used for various purposes such as ticket assignment or filtering.
+
+      operationId: getDepartmentIds
+      security:
+        - APIKeyAuth: []
+      responses:
+        '200':
+          description: Department IDs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  deptIds:
+                    type: array
+                    items:
+                      type: integer
+                example: { "deptIds": [1, 2, 5] }
+                description: The IDs of the available departments.
+        '401':
+          description: Valid API key required
+    post:
+      tags:
+        - Departments
+      summary: Create a new department
+      description: |
+        This endpoint allows the creation of a new department in the system.
+
+        To create a new department, the request body must include the following parameters:
+        - `name`: The name of the department.
+        - `isPublic`: A boolean value indicating whether the department is publicly visible.
+        - `slaId`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
+
+        If `slaId` isn't provided, the department will use the system's default SLA.
+
+        This endpoint returns the ID of the newly created department.
+      operationId: createDepartment
+      security:
+        - APIKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the department.
+                isPublic:
+                  type: boolean
+                  description: A boolean value indicating whether the department is publicly visible.
+                slaId:
+                  type: integer
+                  description: The ID of the Service-Level Agreement (SLA) associated with the department.
+                  required:
+                    - name
+                    - isPublic
+      responses:
+        '201':
+          description: Department created successfully
+          content:
+            application/json:
+              schema:
+                type: integer
+                example: 3
+                description: The ID of the newly created department.
+        '400':
+          description: Syntax error, malformed JSON
+        '401':
+          description: Valid API key required
+    put:
+      tags:
+        - Departments
+      summary: Update an existing department
+      description: |
+        This endpoint allows the update of an existing department in the system.
+
+        To update a department, the request body must include the following parameters:
+        - `deptId`: The department's ID.
+        - `name`: The name of the department. (optional)
+        - `isPublic`: A boolean value indicating whether the department is publicly visible. (optional)
+        - `slaId`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
+      operationId: updateDepartment
+      security:
+        - APIKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deptId:
+                  type: integer
+                  description: The department's ID.
+                name:
+                  type: string
+                  description: The name of the department.
+                isPublic:
+                  type: boolean
+                  description: A boolean value indicating whether the department is publicly visible.
+                slaId:
+                  type: integer
+                  description: The ID of the Service-Level Agreement (SLA) associated with the department.
+                  required:
+                    - deptId
+      responses:
+        '204':
+          description: Department updated successfully
+        '400':
+          description: Syntax error, malformed JSON
+        '401':
+          description: Valid API key required
+    delete:
+      tags:
+        - Departments
+      summary: Delete an existing department
+      description: |
+        This endpoint allows the deletion of an existing department in the system.
+
+        To delete a department, provide the department's ID, `deptId`, as a query parameter.
+      operationId: deleteDepartment
+      security:
+        - APIKeyAuth: []
+      parameters:
+        - in: query
+          name: deptId
+          schema:
+            type: integer
+          description: The ID of the department to be deleted.
+          required: true
+      responses:
+        '204':
+          description: Department deleted successfully
+        '400':
+          description: Invalid query parameter
+        '401':
+          description: Valid API key required
+        '404':
+          description: Department not found
+  /http.php/priorities.json:
+    description: This resource handles all priority-related operations
+    get:
+      tags:
+        - Priorities
+      summary: Get priority IDs
+      description: |
+        Retrieves a list of priority IDs available in the system.
+
+        This endpoint allows users to retrieve a list of priority IDs available in the system.
+        Priority IDs are used to represent the priority levels assigned to tickets.
+
+        The endpoint does not require any parameters. It returns a list of available priority IDs.
+      operationId: getPriorityIds
+      security:
+        - APIKeyAuth: []
+      responses:
+        '200':
+          description: Priority IDs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketIds:
+                    type: array
+                    items:
+                      type: integer
+                example: { "priorityIds": [1, 3, 4] }
+                description: The IDs of the available priorities.
+        '401':
+          description: Valid API key required
+  /http.php/sla.json:
+    description: This resource handles all SLA-related operations
+    get:
+      tags:
+        - SLA (Service-Level Agreement)
+      summary: Get SLA IDs
+      description: |
+        Retrieves a list of SLA IDs available in the system.
+        
+        SLA IDs are used to represent different service-level agreements for tickets.
+
+        The endpoint does not require any parameters. It returns a list of available SLA IDs
+
+      operationId: getSlaIds
+      security:
+        - APIKeyAuth: []
+      responses:
+        '200':
+          description: SLA IDs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketIds:
+                    type: array
+                    items:
+                      type: integer
+                example: { "slaIds": [1, 2, 3] }
+                description: The IDs of the available SLAs.
+        '401':
+          description: Valid API key required
+    post:
+      tags:
+        - SLA (Service-Level Agreement)
+      summary: Create a new SLA
+      description: |
+        This endpoint allows the creation of a new SLA in the system.
+
+        To create a new SLA, the request body must include the following parameters:
+        - `name`: The name of the SLA.
+        - `gracePeriod`: The grace period, in hours, for resolving tickets within the SLA timeframe.
+
+        This endpoint returns the ID of the newly created SLA.
+      operationId: createSla
+      security:
+        - APIKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the SLA.
+                gracePeriod:
+                  type: integer
+                  description: The grace period, in hours, for resolving tickets within the SLA timeframe.
+                  example: 72
+                  required:
+                    - name
+                    - gracePeriod
+      responses:
+        '201':
+          description: SLA created successfully
+          content:
+            application/json:
+              schema:
+                type: integer
+                example: 2
+                description: The ID of the newly created SLA.
+        '400':
+          description: Syntax error, malformed JSON
+        '401':
+          description: Valid API key required
+    put:
+      tags:
+        - SLA (Service-Level Agreement)
+      summary: Update an existing SLA
+      description: |
+        This endpoint allows the update of an existing SLA in the system.
+
+        To update a SLA, the request body may include the following parameters:
+        - `slaId`: The ID of the SLA.
+        - `name`: The name of the SLA. (optional)
+        - `gracePeriod`: The grace period, in hours, for resolving tickets within the SLA timeframe. (optional)
+      operationId: updateSla
+      security:
+        - APIKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                slaId:
+                  type: integer
+                  description: The ID of the SLA.
+                name:
+                  type: string
+                  description: The name of the SLA.
+                gracePeriod:
+                  type: integer
+                  description: The grace period, in hours, for resolving tickets within the SLA timeframe.
+                  example: 72
+                  required:
+                    - slaId
+      responses:
+        '204':
+          description: SLA updated successfully
+        '400':
+          description: Syntax error, malformed JSON
+        '401':
+          description: Valid API key required
+        '404':
+          description: SLA not found
+    delete:
+      tags:
+        - SLA (Service-Level Agreement)
+      summary: Delete an existing SLA
+      description: |
+        This endpoint allows the deletion of an existing SLA in the system.
+
+        To delete an SLA, provide the SLA's ID, `slaId`, as a query parameter.
+      operationId: deleteSla
+      security:
+        - APIKeyAuth: []
+      parameters:
+        - in: query
+          name: slaId
+          schema:
+            type: integer
+          description: The ID of the SLA to be deleted.
+          required: true
+      responses:
+        '204':
+          description: SLA deleted successfully
+        '400':
+          description: Invalid query parameter
+        '401':
+          description: Valid API key required
+        '404':
+          description: SLA not found
+  /http.php/staff.json:
+    description: This resource handles all staff-related operations
+    get:
+      tags:
+        - Staff
+      summary: Get staff member IDs
+      description: |
+        This endpoint retrieves the IDs of all staff members in the system.
+        
+        Staff IDs are unique identifiers assigned to each staff member. This information can be useful for various administrative purposes, such as assigning tasks or permissions.
+
+        The response will include an array of staff IDs.
+      operationId: getStaffIds
+      security:
+        - APIKeyAuth: []
+      responses:
+        '200':
+          description: Staff IDs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketIds:
+                    type: array
+                    items:
+                      type: integer
+                example: { "staffIds": [1, 2, 5] }
+                description: The IDs of the available staff members.
+        '401':
+          description: Valid API key required
+    post:
+      tags:
+        - Staff
+      summary: Create a new staff member (agent)
+      description: |
+        This endpoint allows the creation of a new staff member (agent) in the system.
+
+        To create a new staff member, the request body must include the following parameters:
+        - `firstName`: The staff member's first name.
+        - `lastName`: The staff member's last name.
+        - `username`: The staff member's username.
+        - `email`: The staff member's email address.
+        - `dptId`: The staff member's primary department.
+        - `isAdmin`: A boolean value indicating whether the staff member has administrative privileges.
+
+        This endpoint returns the ID and the initial password of the newly created staff member.
+      operationId: createStaff
+      security:
+        - APIKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                firstName:
+                  type: string
+                  description: The staff member's first name.
+                lastName:
+                  type: string
+                  description: The staff member's last name.
+                username:
+                  type: string
+                  description: The staff member's username.
+                email:
+                  type: string
+                  format: email
+                  description: The staff member's email address.
+                deptId:
+                  type: integer
+                  description: The ID of the staff member's primary department.
+                isAdmin:
+                  type: boolean
+                  description: A boolean value indicating whether the staff member has administrative privileges.
+              required:
+                - firstName
+                - lastName
+                - username
+                - email
+                - deptId
+                - isAdmin
+      responses:
+        '201':
+          description: Staff member created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  staffId:
+                    type: integer
+                    description: The ID of the newly created staff member.
+                  passwd:
+                    type: string
+                    description: The password of the newly created staff member.
+                description: The ID and password of the newly created staff member.
+        '400':
+          description: Syntax error, malformed JSON
+        '401':
+          description: Valid API key required
+    put:
+      tags:
+      - Staff
+      summary: Update an existing staff member (agent)
+      description: |
+        This endpoint allows the update of a staff member (agent) in the system.
+
+        To update a staff member, the request body may include the following parameters:
+        - `staffId`: The ID of the staff member to update.
+        - `firstName`: The staff member's first name. (optional)
+        - `lastName`: The staff member's last name. (optional)
+        - `username`: The staff member's username. (optional)
+        - `email`: The staff member's email address. (optional)
+        - `dptId`: The staff member's primary department. (optional)
+        - `isAdmin`: A boolean value indicating whether the staff member has administrative privileges. (optional)
+      operationId: updateStaff
+      security:
+        - APIKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                staffId:
+                  type: integer
+                  description: The ID of the staff member to update.
+                firstName:
+                  type: string
+                  description: The staff member's first name.
+                lastName:
+                  type: string
+                  description: The staff member's last name.
+                username:
+                  type: string
+                  description: The staff member's username.
+                email:
+                  type: string
+                  format: email
+                  description: The staff member's email address.
+                deptId:
+                  type: integer
+                  description: The ID of the staff member's primary department.
+                isAdmin:
+                  type: boolean
+                  description: A boolean value indicating whether the staff member has administrative privileges.
+              required:
+                - staffId
+      responses:
+        '204':
+          description: Staff member updated successfully
+        '400':
+          description: Syntax error, malformed JSON
+        '401':
+          description: Valid API key required
+        '404':
+          description: Staff member not found
+    delete:
+      tags:
+        - Staff
+      summary: Delete an existing staff member (agent)
+      description: |
+        This endpoint allows the deletion of an existing staff member in the system.
+
+        To delete a staff member, provide the staff member's ID, `staffId`, as a query parameter.
+      operationId: deleteStaff
+      security:
+        - APIKeyAuth: []
+      parameters:
+        - in: query
+          name: staffId
+          schema:
+            type: integer
+          description: The ID of the staff member to be deleted.
+          required: true
+      responses:
+        '204':
+          description: Staff member deleted successfully
+        '400':
+          description: Invalid query parameter
+        '401':
+          description: Valid API key required
+        '404':
+          description: Staff member not found
+  /http.php/teams.json:
+    description: This resource handles all team-related operations
+    get:
+      tags:
+        - Teams
+      summary: Get team IDs
+      description: |
+        Retrieves a list of team IDs available in the system.
+
+        The response contains a list of team IDs that can be used to assign a ticket to a team.
+      operationId: getTeamIds
+      security:
+        - APIKeyAuth: []
+      responses:
+        '200':
+          description: Team IDs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  teamIds:
+                    type: array
+                    items:
+                      type: integer
+                example: { "teamIds": [1, 2, 3] }
+                description: The IDs of the available teams.
+        '401':
+          description: Valid API key required
+    post:
+      tags:
+        - Teams
+      summary: Create a new team
+      description: |
+        This endpoint allows the creation of a new team in the system.
+
+        To create a new team, the request body must include the following parameters:
+        - `name`: The name of the team.
+        - `teamMembersIds`: The IDs of the staff members that are part of this team. (optional)
+
+        This endpoint returns the ID of the newly created team.
+      operationId: createTeam
+      security:
+        - APIKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the team.
+                teamMembersIds:
+                  type: array
+                  items:
+                    type: integer
+                  nullable: true
+                  description: The IDs of the staff members that are part of this team.
+                  example: [1, 2]
+                  required:
+                    - name
+      responses:
+        '201':
+          description: Team created successfully
+          content:
+            application/json:
+              schema:
+                type: integer
+                example: 2
+                description: The ID of the newly created Team.
+        '400':
+          description: Syntax error, malformed JSON
+        '401':
+          description: Valid API key required
+    put:
+      tags:
+        - Teams
+      summary: Update an existing team
+      description: |
+        This endpoint allows the update of an existing team in the system.
+
+        To update a team, the request body must include the following parameters:
+        - `teamId`: The ID of the team.
+        - `name`: The name of the team. (optional)
+        - `teamMembersIds`: The IDs of the staff members that are part of this team. (optional)
+      operationId: updateTeam
+      security:
+        - APIKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                teamId:
+                  type: integer
+                  description: The ID of the team.
+                name:
+                  type: string
+                  description: The name of the team.
+                teamMembersIds:
+                  type: array
+                  items:
+                    type: integer
+                  nullable: true
+                  description: The IDs of the staff members that are part of this team.
+                  example: [1, 2]
+                  required:
+                    - teamId
+      responses:
+        '204':
+          description: Team updated successfully
+        '400':
+          description: Syntax error, malformed JSON
+        '401':
+          description: Valid API key required
+    delete:
+      tags:
+        - Teams
+      summary: Delete an existing team
+      description: |
+        This endpoint allows the deletion of an existing team in the system.
+
+        To delete a team, provide the team's ID, `teamId`, as a query parameter.
+      operationId: deleteTeam
+      security:
+        - APIKeyAuth: []
+      parameters:
+        - in: query
+          name: teamId
+          schema:
+            type: integer
+          description: The ID of the team to be deleted.
+          required: true
+      responses:
+        '204':
+          description: Team deleted successfully
+        '400':
+          description: Invalid query parameter
+        '401':
+          description: Valid API key required
+        '404':
+          description: Team not found
+  /http.php/tickets.json:
+    description: This resource handles all ticket-related operations
+    get:
+      tags:
+        - Tickets
+      summary: Get ticket IDs
+      description: |
+        This endpoint allows users to search for tickets based on various properties.
+
+        To search for tickets, you can provide query parameters in the URL:
+        - `title`: The title or subject of the ticket.
+        - `number`: The ticket number.
+        - `status`: The status of the ticket.
+        - `topicId`: The ID of the topic associated with the ticket.
+        - `priorityId`: The priority ID of the ticket.
+        - `deptId`: The department ID associated with the ticket.
+        - `staffId`: The staff ID assigned to the ticket.
+        - `teamId`: The team ID handling the ticket.
+        - `createdDate`: The creation date of the ticket.
+
+        All parameters are optional.
+        If no parameter is provided, the search will return all tickets.
+        If multiple parameters are provided, the search will return tickets that match all provided criteria.
+
+        NOTE: The IDs returned refer to the `number` property, not the internal IDs used by osTicket.
+      operationId: getTicketIds
+      security:
+        - APIKeyAuth: []
+      parameters:
+        - in: query
+          name: title
+          schema:
+            type: string
+          description: The title or subject of the ticket.
+          example: "Example Title"
+        - in: query
+          name: number
+          schema:
+            type: string
+          description: The ticket number.
+          example: "123456"
+        - in: query
+          name: status
+          schema:
+            type: string
+          description: The status of the ticket.
+          example: "Open"
+        - in: query
+          name: topicId
+          schema:
+            type: integer
+          description: The ID of the topic associated with the ticket.
+          example: 1
+        - in: query
+          name: priorityId
+          schema:
+            type: integer
+          description: The priority ID of the ticket.
+          example: 2
+        - in: query
+          name: deptId
+          schema:
+            type: integer
+          description: The department ID associated with the ticket.
+          example: 3
+        - in: query
+          name: staffId
+          schema:
+            type: integer
+          description: The staff ID assigned to the ticket.
+          example: 4
+        - in: query
+          name: teamId
+          schema:
+            type: integer
+          description: The team ID handling the ticket.
+          example: 5
+        - in: query
+          name: createdDate
+          schema:
+            type: string
+            format: date-time
+          description: The creation date of the ticket.
+          example: "2024-04-25T10:15:30Z"
+      responses:
+        '200':
+          description: Ticket IDs obtained successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketIds:
+                    type: array
+                    items:
+                      type: integer
+                example: { "ticketIds": [487102, 557967, 825773] }
+                description: The IDs of the tickets matching the search parameters.
+        '401':
+          description: Valid API key required
+    post:
+      tags:
+        - Tickets
+      summary: Create a new ticket
+      description: |
+        This endpoint allows users to create a new ticket in the system.
+
+        To create a ticket, the request body must include the following parameters:
+        - `name`: The name of the user creating the ticket. (optional, if email is valid)
+        - `email`: The email address of the user creating the ticket.
+        - `subject`: The subject of the ticket.
+        - `message`: The message or description associated with the ticket.
+        - `priorityId`: The priority level of the ticket. (optional)
+        - `topicId`: The ID of the topic associated with the ticket. (optional)
+        - `slaId`: The ID of the SLA (service-level agreement) associated with the ticket. (optional)
+        - `deptId`: The ID of the department responsible for the ticket. (optional)
+        - `staffId`: The ID of the staff member assigned to the ticket. (optional)
+        - `teamId`: The ID of the team handling the ticket. (optional)
+        - `statusId`: The initial status ID of the ticket. (optional)
+
+        This endpoint returns the ID of the newly created ticket.
+
+        NOTE: The ID returned refers to the `number` property, not the internal ID used by osTicket.
+      operationId: createTicket
+      security:
+        - APIKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The name of the user creating the ticket.
+                email:
+                  type: string
+                  format: email
+                  description: The email address of the user creating the ticket.
+                subject:
+                  type: string
+                  description: The subject of the ticket.
+                message:
+                  type: string
+                  description: The message or description associated with the ticket.
+                priorityId:
+                  type: integer
+                  description: The priority level of the ticket.
+                topicId:
+                  type: integer
+                  description: The ID of the topic associated with the ticket.
+                slaId:
+                  type: integer
+                  description: The ID of the SLA (service-level agreement) associated with the ticket.
+                deptId:
+                  type: integer
+                  description: The ID of the department responsible for the ticket.
+                staffId:
+                  type: integer
+                  description: The ID of the staff member assigned to the ticket.
+                teamId:
+                  type: integer
+                  description: The ID of the team handling the ticket.
+                statusId:
+                  type: integer
+                  description: The initial status ID of the ticket.
+              required:
+                - email
+                - subject
+                - message
+      responses:
+        '201':
+          description: Ticket created successfully
+          content:
+            application/json:
+              schema:
+                type: integer
+                example: 487102
+                description: The ID of the newly created ticket.
+        '400':
+          description: Syntax error, malformed JSON
+        '401':
+          description: Valid API key required
+    put:
+      tags:
+        - Tickets
+      summary: Update an existing ticket
+      description: |
+        This endpoint allows users to update the properties of a ticket in the system.
+
+        To update a ticket, the request body must include the following parameters:
+        - `ticketId`: The ID of the ticket to be updated.
+        - `priorityId`: The priority level of the ticket. (optional)
+        - `topicId`: The ID of the topic associated with the ticket. (optional)
+        - `slaId`: The ID of the SLA (service-level agreement) associated with the ticket. (optional)
+        - `deptId`: The ID of the department responsible for the ticket. (optional)
+        - `staffId`: The ID of the staff member assigned to the ticket. (optional)
+        - `teamId`: The ID of the team handling the ticket. (optional)
+        - `statusId`: The status ID of the ticket. (optional)
+        - `message`: A message sent from the user. (optional)
+        - `reply`: A reply sent from a staff member. (optional)
+        - `note`: An internal note posted by a staff member. (optional)
+
+        NOTE: `ticketId` refers to the `number` property, not the internal ID used by osTicket.
+      operationId: updateTicket
+      security:
+        - APIKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                ticketId:
+                  type: integer
+                  description: The ID of the ticket to be updated.
+                priorityId:
+                  type: integer
+                  description: The priority level of the ticket.
+                topicId:
+                  type: integer
+                  description: The ID of the topic associated with the ticket.
+                slaId:
+                  type: integer
+                  description: The ID of the SLA (service-level agreement) associated with the ticket.
+                deptId:
+                  type: integer
+                  description: The ID of the department responsible for the ticket.
+                staffId:
+                  type: integer
+                  description: The ID of the staff member assigned to the ticket.
+                teamId:
+                  type: integer
+                  description: The ID of the team handling the ticket.
+                statusId:
+                  type: integer
+                  description: The status ID of the ticket.
+                message:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                      description: The title of the message sent from the user.
+                    body:
+                      type: string
+                      description: The content of the message sent from the user.
+                      example: "This is a message from the user."
+                reply:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                      nullable: true
+                      description: The title of the reply sent from a staff member.
+                    body:
+                      type: string
+                      description: The content of the reply sent from a staff member.
+                      nullable: true
+                      example: "This is a reply from a staff member."
+                note:
+                  type: object
+                  properties:
+                    title:
+                      type: string
+                      description: The title of the internal note posted by a staff member.
+                    body:
+                      type: string
+                      description: The content of the internal note posted by a staff member.
+                      nullable: true
+                      example: "This is an internal note from a staff member."
+              required:
+                - ticketId
+      responses:
+        '204':
+          description: Ticket updated successfully
+        '400':
+          description: Syntax error, malformed JSON
+        '401':
+          description: Valid API key required
+        '404':
+          description: Ticket not found
+        '423':
+          description: Ticket locked
+    delete:
+      tags:
+        - Tickets
+      summary: Delete an existing ticket
+      description: |
+        This endpoint allows users to delete a ticket in the system.
+
+        To delete a ticket, provide the ticket's ID, `ticketId`, as a query parameter.
+
+        NOTE: `ticketId` refers to the `number` property, not the internal ID used by osTicket.
+      operationId: deleteTicket
+      security:
+        - APIKeyAuth: []
+      parameters:
+        - in: query
+          name: ticketId
+          schema:
+            type: integer
+          description: The ID of the ticket to be deleted.
+          required: true
+      responses:
+        '204':
+          description: Ticket deleted successfully
+        '400':
+          description: Invalid query parameter
+        '401':
+          description: Valid API key required
+        '404':
+          description: Ticket not found
+  /http.php/topics.json:
+    description: This resource handles all topic-related operations
+    get:
+      tags:
+        - Topics
+      summary: Get topic IDs
+      description: |
+        Retrieves a list of topic IDs available in the system.
+
+        The response contains a list of topic IDs that can be used to reference specific topics when creating or updating tickets.
+      operationId: getTopicIds
+      security:
+        - APIKeyAuth: []
+      responses:
+        '200':
+          description: Topic IDs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketIds:
+                    type: array
+                    items:
+                      type: integer
+                example: { "topicIds": [1, 2, 3] }
+                description: The IDs of the available topics.
+        '401':
+          description: Valid API key required
+    post:
+      tags:
+        - Topics
+      summary: Create a new topic
+      description: |
+        This endpoint allows the creation of a new topic in the system.
+
+        To create a new topic, the request body must include the following parameters:
+        - `topic`: The name of the topic.
+        - `isPublic`: A boolean value indicating whether the topic is publicly visible.
+        - `deptId`: The ID of the department associated with this topic. (optional)
+        - `priorityId`: The ID of the priority associated with this topic. (optional)
+        - `slaId`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
+
+        If `deptId`, `priorityId` or `slaId` aren't provided, the system's default values will be used.
+
+        This endpoint returns the ID of the newly created topic.
+      operationId: createTopic
+      security:
+        - APIKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                topic:
+                  type: string
+                  description: The name of the topic.
+                isPublic:
+                  type: boolean
+                  description: A boolean value indicating whether the topic is publicly visible.
+                deptId:
+                  type: integer
+                  description: The ID of the department associated with this topic.
+                  nullable: true
+                  example: 123
+                priorityId:
+                  type: integer
+                  description: The ID of the priority associated with this topic.
+                  nullable: true
+                  example: 4
+                slaId:
+                  type: integer
+                  description: The ID of the Service-Level Agreement (SLA) associated with the department.
+                  nullable: true
+                  example: 1
+                  required:
+                    - topic
+                    - isPublic
+      responses:
+        '201':
+          description: Topic created successfully
+          content:
+            application/json:
+              schema:
+                type: integer
+                example: 7
+                description: The ID of the newly created Topic.
+        '400':
+          description: Syntax error, malformed JSON
+        '401':
+          description: Valid API key required
+    put:
+      tags:
+        - Topics
+      summary: Update an existing topic
+      description: |
+        This endpoint allows the update of an existing topic in the system.
+
+        To update a topic, the request body must include the following parameters:
+        - `topicId`: The topic's ID.
+        - `topic`: The name of the topic. (optional)
+        - `isPublic`: A boolean value indicating whether the topic is publicly visible. (optional)
+        - `deptId`: The ID of the department associated with this topic. (optional)
+        - `priorityId`: The ID of the priority associated with this topic. (optional)
+        - `slaId`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
+      operationId: updateTopic
+      security:
+        - APIKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                topicId:
+                  type: integer
+                  description: The topic's ID.
+                topic:
+                  type: string
+                  description: The name of the topic.
+                isPublic:
+                  type: boolean
+                  description: A boolean value indicating whether the topic is publicly visible.
+                deptId:
+                  type: integer
+                  description: The ID of the department associated with this topic.
+                  nullable: true
+                  example: 123
+                priorityId:
+                  type: integer
+                  description: The ID of the priority associated with this topic.
+                  nullable: true
+                  example: 4
+                slaId:
+                  type: integer
+                  description: The ID of the Service-Level Agreement (SLA) associated with the department.
+                  nullable: true
+                  example: 1
+                  required:
+                    - topicId
+      responses:
+        '204':
+          description: Topic updated successfully
+        '400':
+          description: Syntax error, malformed JSON
+        '401':
+          description: Valid API key required
+    delete:
+      tags:
+        - Topics
+      summary: Delete an existing topic
+      description: |
+        This endpoint allows the deletion of an existing topic in the system.
+
+        To delete a topic, provide the topic's ID, `topicId`, as a query parameter.
+      operationId: deleteTopic
+      security:
+        - APIKeyAuth: []
+      parameters:
+        - in: query
+          name: topicId
+          schema:
+            type: integer
+          description: The ID of the topic to be deleted.
+          required: true
+      responses:
+        '204':
+          description: Topic deleted successfully
+        '400':
+          description: Invalid query parameter
+        '401':
+          description: Valid API key required
+        '404':
+          description: Topic not found
+  /http.php/users.json:
+    description: This resource handles all user-related operations
+    get:
+      tags:
+        - Users
+      summary: Get user IDs
+      description: |
+        This endpoint retrieves the IDs of all users in the system.
+        
+        User IDs are unique identifiers assigned to each user.
+
+        The response will include an array of user IDs.
+      operationId: getUserIds
+      security:
+        - APIKeyAuth: []
+      responses:
+        '200':
+          description: User IDs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ticketIds:
+                    type: array
+                    items:
+                      type: integer
+                example: { "userIds": [1, 2, 3] }
+                description: The IDs of the available users.
+        '401':
+          description: Valid API key required
+    post:
+      tags:
+        - Users
+      summary: Create a new user
+      description: |
+        This endpoint allows the creation of a new user in the system.
+
+        To create a new user, the request body must include the following parameters:
+        - `name`: The user's name.
+        - `email`: The user's email address.
+
+        This endpoint returns the ID and the initial password of the newly created user.
+      operationId: createUser
+      security:
+        - APIKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: The user's name.
+                email:
+                  type: string
+                  format: email
+                  description: The user's email address.
+              required:
+                - name
+                - email
+      responses:
+        '201':
+          description: User created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  userId:
+                    type: integer
+                    description: The ID of the newly created user.
+                  passwd:
+                    type: string
+                    description: The password of the newly created user.
+                description: The ID and password of the newly created user.
+        '400':
+          description: Syntax error, malformed JSON
+        '401':
+          description: Valid API key required
+    put:
+      tags:
+      - Users
+      summary: Update an existing user
+      description: |
+        This endpoint allows the update of a user in the system.
+
+        To update a user, the request body may include the following parameters:
+        - `userId`: The ID of the user to update.
+        - `name`: The user's name. (optional)
+        - `email`: The user's email address. (optional)
+      operationId: updateUser
+      security:
+        - APIKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                userId:
+                  type: integer
+                  description: The ID of the user to update.
+                name:
+                  type: string
+                  description: The user's name.
+                email:
+                  type: string
+                  format: email
+                  description: The user's email address.
+              required:
+                - userId
+      responses:
+        '204':
+          description: User updated successfully
+        '400':
+          description: Syntax error, malformed JSON
+        '401':
+          description: Valid API key required
+        '404':
+          description: User not found
+    delete:
+      tags:
+        - Users
+      summary: Delete an existing user
+      description: |
+        This endpoint allows the deletion of an existing user in the system.
+
+        To delete a user, provide the user's ID, `userId`, as a query parameter.
+      operationId: deleteUser
+      security:
+        - APIKeyAuth: []
+      parameters:
+        - in: query
+          name: userId
+          schema:
+            type: integer
+          description: The ID of the user to be deleted.
+          required: true
+      responses:
+        '204':
+          description: User deleted successfully
+        '400':
+          description: Invalid query parameter
+        '401':
+          description: Valid API key required
+        '404':
+          description: User not found
+components:
+  securitySchemes:
+    APIKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-Key
