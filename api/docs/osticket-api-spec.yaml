@@ -22,6 +22,7 @@ tags:
     - name: Priorities
     - name: SLA (Service-Level Agreement)
     - name: Staff
+    - name: Status
     - name: Teams
     - name: Tickets
     - name: Topics
@@ -205,11 +206,11 @@ paths:
               schema:
                 type: object
                 properties:
-                  ticketIds:
+                  priorityIds:
                     type: array
                     items:
                       type: integer
-                example: { "priorityIds": [1, 3, 4] }
+                example: { "priorityIds": [1, 2, 3, 4] }
                 description: The IDs of the available priorities.
         '401':
           description: Valid API key required
@@ -546,6 +547,38 @@ paths:
           description: Valid API key required
         '404':
           description: Staff member not found
+  /http.php/status.json:
+    description: This resource handles all status-related operations
+    get:
+      tags:
+        - Status
+      summary: Get status IDs
+      description: |
+        Retrieves a list of status IDs available in the system.
+
+        This endpoint allows users to retrieve a list of status IDs available in the system.
+        Status IDs are used to represent the status of a ticket.
+
+        The endpoint does not require any parameters. It returns a list of available status IDs.
+      operationId: getStatusIds
+      security:
+        - APIKeyAuth: []
+      responses:
+        '200':
+          description: Status IDs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statusIds:
+                    type: array
+                    items:
+                      type: integer
+                example: { "statusIds": [1, 2, 3, 4, 5] }
+                description: The IDs of the available statuses.
+        '401':
+          description: Valid API key required
   /http.php/teams.json:
     description: This resource handles all team-related operations
     get:
