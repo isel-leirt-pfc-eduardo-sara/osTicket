@@ -1,13 +1,54 @@
 openapi: 3.0.1
 info:
   title: osTicket API
-  description: "The osTicket API is a RESTful web service that allows users to interact
+  description: |
+    The *osTicket API* is a *RESTful web service* that allows users to interact
     programmatically with the osTicket helpdesk system. osTicket is an open-source support
     ticket system that enables organizations to efficiently manage customer inquiries, issues,
-    and tickets.\n\nThis document provides detailed information about available endpoints,
+    and tickets.
+    
+    This document provides detailed information about available endpoints,
     request and response formats, authentication methods, error handling, and best practices
     for API usage. It serves as a comprehensive resource for developers looking to integrate
-    osTicket with their applications or systems."
+    osTicket with their applications or systems.
+
+    *The available endpoints are grouped as follows:*
+
+    - *Departments:* Provides operations to create, update and delete departments, as well
+    as an operation to get the IDs of the available departments in the system.
+
+    - *SLA (Service-Level Agreement):* Provides operations to create, update and delete SLAs, as well
+    as an operation to get the IDs of the available SLAs in the system. These SLAs can be associated
+    to tickets and departments.
+
+    - *Staff:* Provides operations to create, update and delete staff members, as well as an
+    operation to get the IDs of the available staff members in the system.
+
+    - *Teams:* Provides operations to create, update and delete teams, as well as an operation to get
+    the IDs of the available teams in the system.
+
+    - *Tickets:* Provides operations to create, update and delete tickets, as well as an operation
+    to get and filter the IDs of the available tickets in the system based on various properties.
+
+    - *Ticket Priorities:* Provides an operation to get the IDs of the available ticket properties
+    in the system.
+
+    - *Ticket Status:* Provides an operation to get the available ticket status IDs in the system.
+
+    - *Ticket Topics:* Provides operations to create, update and delete ticket topics, as well as
+    an operation to get the IDs of the available ticket topics in the system.
+
+    - *Users:* Provides operations to create, update and delete users, as well as an operation to
+    get the IDs of the available users in the system.
+
+    #### Authentication
+    Authentication via the API is done via API keys configured inside the osTicket admin panel.
+    API keys are created and tied to a source IP address, which will be checked against the source
+    IP of requests to the HTTP API. API keys can be created and managed via the admin panel.
+
+    Navigate to Manage -> API keys. Use 'Add New API Key' to create a new API key.
+    
+    All HTTP requests require the presence of a valid API key in the authorization header. Header key: X-API-Key
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
@@ -19,16 +60,17 @@ security:
   - APIKeyAuth: []
 tags:
     - name: Departments
-    - name: Priorities
+
     - name: SLA (Service-Level Agreement)
     - name: Staff
-    - name: Status
     - name: Teams
     - name: Tickets
-    - name: Topics
+    - name: Ticket Priorities
+    - name: Ticket Status
+    - name: Ticket Topics
     - name: Users
 paths:
-  /http.php/departments.json:
+  /https://host/osTicketBase/http.php/departments.json:
     description: This resource handles all department-related operations
     get:
       tags:
@@ -43,6 +85,8 @@ paths:
         This endpoint allows clients to fetch the list of available department IDs,
         which can be used for various purposes such as ticket assignment or filtering.
 
+        NOTE: For ease of identification, department names are provided alongside their
+        respective IDs in the response.
       operationId: getDepartmentIds
       security:
         - APIKeyAuth: []
@@ -57,11 +101,27 @@ paths:
                   deptIds:
                     type: array
                     items:
-                      type: integer
-                example: { "deptIds": [1, 2, 5] }
-                description: The IDs of the available departments.
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                          description: The ID of the department.
+                        name:
+                          type: string
+                          description: The name of the department.
+                example: 
+                  deptIds:
+                    - id: 1
+                      name: Department A
+                    - id: 2
+                      name: Department B
+                    - id: 5
+                      name: Department C
+                description: The IDs and names of the available departments.
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     post:
       tags:
         - Departments
@@ -70,8 +130,11 @@ paths:
         This endpoint allows the creation of a new department in the system.
 
         To create a new department, the request body must include the following parameters:
+        
         - `name`: The name of the department.
+
         - `isPublic`: A boolean value indicating whether the department is publicly visible.
+        
         - `slaId`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
 
         If `slaId` isn't provided, the department will use the system's default SLA.
@@ -112,6 +175,8 @@ paths:
           description: Syntax error, malformed JSON
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     put:
       tags:
         - Departments
@@ -120,10 +185,17 @@ paths:
         This endpoint allows the update of an existing department in the system.
 
         To update a department, the request body must include the following parameters:
+
         - `deptId`: The department's ID.
+        
         - `name`: The name of the department. (optional)
+        
         - `isPublic`: A boolean value indicating whether the department is publicly visible. (optional)
+        
         - `slaId`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
+
+        NOTE: All updatable properties are optional, meaning, the client can choose which properties to update.
+        If no updatable property is provided, an error message will be returned.
       operationId: updateDepartment
       security:
         - APIKeyAuth: []
@@ -152,9 +224,11 @@ paths:
         '204':
           description: Department updated successfully
         '400':
-          description: Syntax error, malformed JSON
+          $ref: '#/components/responses/BadRequest'
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     delete:
       tags:
         - Departments
@@ -182,39 +256,9 @@ paths:
           description: Valid API key required
         '404':
           description: Department not found
-  /http.php/priorities.json:
-    description: This resource handles all priority-related operations
-    get:
-      tags:
-        - Priorities
-      summary: Get priority IDs
-      description: |
-        Retrieves a list of priority IDs available in the system.
-
-        This endpoint allows users to retrieve a list of priority IDs available in the system.
-        Priority IDs are used to represent the priority levels assigned to tickets.
-
-        The endpoint does not require any parameters. It returns a list of available priority IDs.
-      operationId: getPriorityIds
-      security:
-        - APIKeyAuth: []
-      responses:
-        '200':
-          description: Priority IDs retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  priorityIds:
-                    type: array
-                    items:
-                      type: integer
-                example: { "priorityIds": [1, 2, 3, 4] }
-                description: The IDs of the available priorities.
-        '401':
-          description: Valid API key required
-  /http.php/sla.json:
+        '500':
+          description: Internal server error
+  /https://host/osTicketBase/http.php/sla.json:
     description: This resource handles all SLA-related operations
     get:
       tags:
@@ -223,10 +267,12 @@ paths:
       description: |
         Retrieves a list of SLA IDs available in the system.
         
-        SLA IDs are used to represent different service-level agreements for tickets.
+        SLA IDs are used to represent different service-level agreements for tickets and departments.
 
         The endpoint does not require any parameters. It returns a list of available SLA IDs
 
+        NOTE: For ease of identification, SLA names are provided alongside their
+        respective IDs in the response.
       operationId: getSlaIds
       security:
         - APIKeyAuth: []
@@ -238,14 +284,28 @@ paths:
               schema:
                 type: object
                 properties:
-                  ticketIds:
+                  slas:
                     type: array
                     items:
-                      type: integer
-                example: { "slaIds": [1, 2, 3] }
-                description: The IDs of the available SLAs.
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    example:
+                      - id: 1
+                        name: "SLA 1"
+                      - id: 2
+                        name: "SLA 2"
+                      - id: 3
+                        name: "SLA 3"
+                description: |
+                  The IDs and names of the available SLAs.
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     post:
       tags:
         - SLA (Service-Level Agreement)
@@ -254,7 +314,9 @@ paths:
         This endpoint allows the creation of a new SLA in the system.
 
         To create a new SLA, the request body must include the following parameters:
+        
         - `name`: The name of the SLA.
+        
         - `gracePeriod`: The grace period, in hours, for resolving tickets within the SLA timeframe.
 
         This endpoint returns the ID of the newly created SLA.
@@ -291,6 +353,8 @@ paths:
           description: Syntax error, malformed JSON
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     put:
       tags:
         - SLA (Service-Level Agreement)
@@ -299,9 +363,15 @@ paths:
         This endpoint allows the update of an existing SLA in the system.
 
         To update a SLA, the request body may include the following parameters:
+        
         - `slaId`: The ID of the SLA.
+        
         - `name`: The name of the SLA. (optional)
+        
         - `gracePeriod`: The grace period, in hours, for resolving tickets within the SLA timeframe. (optional)
+
+        NOTE: All updatable properties are optional, meaning, the client can choose which properties to update.
+        If no updatable property is provided, an error message will be returned.
       operationId: updateSla
       security:
         - APIKeyAuth: []
@@ -328,11 +398,13 @@ paths:
         '204':
           description: SLA updated successfully
         '400':
-          description: Syntax error, malformed JSON
+          $ref: '#/components/responses/BadRequest'
         '401':
           description: Valid API key required
         '404':
           description: SLA not found
+        '500':
+          description: Internal server error
     delete:
       tags:
         - SLA (Service-Level Agreement)
@@ -360,7 +432,9 @@ paths:
           description: Valid API key required
         '404':
           description: SLA not found
-  /http.php/staff.json:
+        '500':
+          description: Internal server error
+  /https://host/osTicketBase/http.php/staff.json:
     description: This resource handles all staff-related operations
     get:
       tags:
@@ -372,6 +446,9 @@ paths:
         Staff IDs are unique identifiers assigned to each staff member. This information can be useful for various administrative purposes, such as assigning tasks or permissions.
 
         The response will include an array of staff IDs.
+
+        NOTE: For ease of identification, the staff members' names are provided alongside their
+        respective IDs in the response.
       operationId: getStaffIds
       security:
         - APIKeyAuth: []
@@ -383,14 +460,28 @@ paths:
               schema:
                 type: object
                 properties:
-                  ticketIds:
+                  staff:
                     type: array
                     items:
-                      type: integer
-                example: { "staffIds": [1, 2, 5] }
-                description: The IDs of the available staff members.
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    example:
+                      - id: 1
+                        name: "John Doe"
+                      - id: 2
+                        name: "Jane Smith"
+                      - id: 5
+                        name: "Alice Johnson"
+                description: |
+                  The IDs and names of the available staff members.
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     post:
       tags:
         - Staff
@@ -399,11 +490,17 @@ paths:
         This endpoint allows the creation of a new staff member (agent) in the system.
 
         To create a new staff member, the request body must include the following parameters:
+        
         - `firstName`: The staff member's first name.
+        
         - `lastName`: The staff member's last name.
+        
         - `username`: The staff member's username.
+        
         - `email`: The staff member's email address.
+        
         - `dptId`: The staff member's primary department.
+        
         - `isAdmin`: A boolean value indicating whether the staff member has administrative privileges.
 
         This endpoint returns the ID and the initial password of the newly created staff member.
@@ -462,6 +559,8 @@ paths:
           description: Syntax error, malformed JSON
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     put:
       tags:
       - Staff
@@ -470,13 +569,23 @@ paths:
         This endpoint allows the update of a staff member (agent) in the system.
 
         To update a staff member, the request body may include the following parameters:
+        
         - `staffId`: The ID of the staff member to update.
+        
         - `firstName`: The staff member's first name. (optional)
+        
         - `lastName`: The staff member's last name. (optional)
+        
         - `username`: The staff member's username. (optional)
+        
         - `email`: The staff member's email address. (optional)
+        
         - `dptId`: The staff member's primary department. (optional)
+        
         - `isAdmin`: A boolean value indicating whether the staff member has administrative privileges. (optional)
+
+        NOTE: All updatable properties are optional, meaning, the client can choose which properties to update.
+        If no updatable property is provided, an error message will be returned.
       operationId: updateStaff
       security:
         - APIKeyAuth: []
@@ -515,11 +624,13 @@ paths:
         '204':
           description: Staff member updated successfully
         '400':
-          description: Syntax error, malformed JSON
+          $ref: "#/components/responses/BadRequest"
         '401':
           description: Valid API key required
         '404':
           description: Staff member not found
+        '500':
+          description: Internal server error
     delete:
       tags:
         - Staff
@@ -547,39 +658,9 @@ paths:
           description: Valid API key required
         '404':
           description: Staff member not found
-  /http.php/status.json:
-    description: This resource handles all status-related operations
-    get:
-      tags:
-        - Status
-      summary: Get status IDs
-      description: |
-        Retrieves a list of status IDs available in the system.
-
-        This endpoint allows users to retrieve a list of status IDs available in the system.
-        Status IDs are used to represent the status of a ticket.
-
-        The endpoint does not require any parameters. It returns a list of available status IDs.
-      operationId: getStatusIds
-      security:
-        - APIKeyAuth: []
-      responses:
-        '200':
-          description: Status IDs retrieved successfully
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  statusIds:
-                    type: array
-                    items:
-                      type: integer
-                example: { "statusIds": [1, 2, 3, 4, 5] }
-                description: The IDs of the available statuses.
-        '401':
-          description: Valid API key required
-  /http.php/teams.json:
+        '500':
+          description: Internal server error
+  /https://host/osTicketBase/http.php/teams.json:
     description: This resource handles all team-related operations
     get:
       tags:
@@ -589,25 +670,42 @@ paths:
         Retrieves a list of team IDs available in the system.
 
         The response contains a list of team IDs that can be used to assign a ticket to a team.
+
+        NOTE: For ease of identification, team names are provided alongside their
+        respective IDs in the response.
       operationId: getTeamIds
       security:
         - APIKeyAuth: []
       responses:
         '200':
-          description: Team IDs retrieved successfully
+          description: Team IDs and names retrieved successfully
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  teamIds:
+                  teams:
                     type: array
                     items:
-                      type: integer
-                example: { "teamIds": [1, 2, 3] }
-                description: The IDs of the available teams.
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    example:
+                      - id: 1
+                        name: "Team Alpha"
+                      - id: 2
+                        name: "Team Beta"
+                      - id: 3
+                        name: "Team Gamma"
+                description: |
+                  The IDs and names of the available teams.
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     post:
       tags:
         - Teams
@@ -616,7 +714,9 @@ paths:
         This endpoint allows the creation of a new team in the system.
 
         To create a new team, the request body must include the following parameters:
+        
         - `name`: The name of the team.
+        
         - `teamMembersIds`: The IDs of the staff members that are part of this team. (optional)
 
         This endpoint returns the ID of the newly created team.
@@ -655,6 +755,8 @@ paths:
           description: Syntax error, malformed JSON
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     put:
       tags:
         - Teams
@@ -663,9 +765,15 @@ paths:
         This endpoint allows the update of an existing team in the system.
 
         To update a team, the request body must include the following parameters:
+        
         - `teamId`: The ID of the team.
+        
         - `name`: The name of the team. (optional)
+        
         - `teamMembersIds`: The IDs of the staff members that are part of this team. (optional)
+      
+        NOTE: All updatable properties are optional, meaning, the client can choose which properties to update.
+        If no updatable property is provided, an error message will be returned.
       operationId: updateTeam
       security:
         - APIKeyAuth: []
@@ -695,9 +803,11 @@ paths:
         '204':
           description: Team updated successfully
         '400':
-          description: Syntax error, malformed JSON
+          $ref: "#/components/responses/BadRequest"
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     delete:
       tags:
         - Teams
@@ -725,7 +835,9 @@ paths:
           description: Valid API key required
         '404':
           description: Team not found
-  /http.php/tickets.json:
+        '500':
+          description: Internal server error
+  /https://host/osTicketBase/http.php/tickets.json:
     description: This resource handles all ticket-related operations
     get:
       tags:
@@ -735,21 +847,31 @@ paths:
         This endpoint allows users to search for tickets based on various properties.
 
         To search for tickets, you can provide query parameters in the URL:
+        
         - `title`: The title or subject of the ticket.
+        
         - `number`: The ticket number.
+        
         - `status`: The status of the ticket.
+        
         - `topicId`: The ID of the topic associated with the ticket.
+        
         - `priorityId`: The priority ID of the ticket.
+        
         - `deptId`: The department ID associated with the ticket.
+        
         - `staffId`: The staff ID assigned to the ticket.
+        
         - `teamId`: The team ID handling the ticket.
+        
         - `createdDate`: The creation date of the ticket.
 
         All parameters are optional.
         If no parameter is provided, the search will return all tickets.
         If multiple parameters are provided, the search will return tickets that match all provided criteria.
 
-        NOTE: The IDs returned refer to the `number` property, not the internal IDs used by osTicket.
+        NOTE: The IDs returned refer to the `number` property, not the internal IDs used by osTicket. For ease of
+        identification, the tickets' titles are provided alongside their respective IDs in the response.
       operationId: getTicketIds
       security:
         - APIKeyAuth: []
@@ -817,14 +939,28 @@ paths:
               schema:
                 type: object
                 properties:
-                  ticketIds:
+                  tickets:
                     type: array
                     items:
-                      type: integer
-                example: { "ticketIds": [487102, 557967, 825773] }
-                description: The IDs of the tickets matching the search parameters.
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        title:
+                          type: string
+                    example:
+                      - id: 487102
+                        title: "Ticket A"
+                      - id: 557967
+                        title: "Ticket B"
+                      - id: 825773
+                        title: "Ticket C"
+                description: |
+                  The IDs and titles of the tickets matching the search parameters.
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     post:
       tags:
         - Tickets
@@ -833,16 +969,27 @@ paths:
         This endpoint allows users to create a new ticket in the system.
 
         To create a ticket, the request body must include the following parameters:
+        
         - `name`: The name of the user creating the ticket. (optional, if email is valid)
+        
         - `email`: The email address of the user creating the ticket.
+        
         - `subject`: The subject of the ticket.
+        
         - `message`: The message or description associated with the ticket.
+        
         - `priorityId`: The priority level of the ticket. (optional)
+        
         - `topicId`: The ID of the topic associated with the ticket. (optional)
+        
         - `slaId`: The ID of the SLA (service-level agreement) associated with the ticket. (optional)
+        
         - `deptId`: The ID of the department responsible for the ticket. (optional)
+        
         - `staffId`: The ID of the staff member assigned to the ticket. (optional)
+        
         - `teamId`: The ID of the team handling the ticket. (optional)
+        
         - `statusId`: The initial status ID of the ticket. (optional)
 
         This endpoint returns the ID of the newly created ticket.
@@ -909,6 +1056,8 @@ paths:
           description: Syntax error, malformed JSON
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     put:
       tags:
         - Tickets
@@ -917,19 +1066,32 @@ paths:
         This endpoint allows users to update the properties of a ticket in the system.
 
         To update a ticket, the request body must include the following parameters:
+        
         - `ticketId`: The ID of the ticket to be updated.
+        
         - `priorityId`: The priority level of the ticket. (optional)
+        
         - `topicId`: The ID of the topic associated with the ticket. (optional)
+        
         - `slaId`: The ID of the SLA (service-level agreement) associated with the ticket. (optional)
+        
         - `deptId`: The ID of the department responsible for the ticket. (optional)
+        
         - `staffId`: The ID of the staff member assigned to the ticket. (optional)
+        
         - `teamId`: The ID of the team handling the ticket. (optional)
+        
         - `statusId`: The status ID of the ticket. (optional)
+        
         - `message`: A message sent from the user. (optional)
+        
         - `reply`: A reply sent from a staff member. (optional)
+        
         - `note`: An internal note posted by a staff member. (optional)
 
-        NOTE: `ticketId` refers to the `number` property, not the internal ID used by osTicket.
+        NOTE: All updatable properties are optional, meaning, the client can choose which properties to update.
+        If no updatable property is provided, an error message will be returned. `ticketId` refers to the `number`
+        property, not the internal ID used by osTicket.
       operationId: updateTicket
       security:
         - APIKeyAuth: []
@@ -1003,13 +1165,15 @@ paths:
         '204':
           description: Ticket updated successfully
         '400':
-          description: Syntax error, malformed JSON
+          $ref: "#/components/responses/BadRequest"
         '401':
           description: Valid API key required
         '404':
           description: Ticket not found
         '423':
           description: Ticket locked
+        '500':
+          description: Internal server error
     delete:
       tags:
         - Tickets
@@ -1039,16 +1203,122 @@ paths:
           description: Valid API key required
         '404':
           description: Ticket not found
-  /http.php/topics.json:
+        '500':
+          description: Internal server error
+  /https://host/osTicketBase/http.php/priorities.json:
+    description: This resource handles all priority-related operations
+    get:
+      tags:
+        - Ticket Priorities
+      summary: Get ticket priority IDs
+      description: |
+        Retrieves a list of ticket priority IDs available in the system.
+
+        This endpoint allows users to retrieve a list of ticket priority IDs available in the system.
+        Priority IDs are used to represent the priority levels assigned to tickets.
+
+        The endpoint does not require any parameters. It returns a list of available priority IDs.
+
+        NOTE: For ease of identification, priority names are provided alongside their respective IDs in
+        the response.
+      operationId: getPriorityIds
+      security:
+        - APIKeyAuth: []
+      responses:
+        '200':
+          description: Ticket priority IDs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  priorities:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    example:
+                      - id: 1
+                        name: "low"
+                      - id: 2
+                        name: "normal"
+                      - id: 3
+                        name: "high"
+                      - id: 4
+                        name: "emergency"
+                description: |
+                  The IDs and names of the available priorities.
+        '401':
+          description: Valid API key required
+        '500':
+          description: Internal server error
+  /https://host/osTicketBase/http.php/status.json:
+    description: This resource handles all status-related operations
+    get:
+      tags:
+        - Ticket Status
+      summary: Get status IDs
+      description: |
+        Retrieves a list of ticket status IDs available in the system.
+
+        This endpoint allows users to retrieve a list of status IDs available in the system.
+        Status IDs are used to represent the status of a ticket.
+
+        The endpoint does not require any parameters. It returns a list of available status IDs.
+
+        NOTE: For ease of identification, ticket status names are provided alongside their
+        respective IDs in the response.
+      operationId: getStatusIds
+      security:
+        - APIKeyAuth: []
+      responses:
+        '200':
+          description: Status IDs retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  statuses:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    example:
+                      - id: 1
+                        name: "Open"
+                      - id: 2
+                        name: "Resolved"
+                      - id: 3
+                        name: "Closed"
+                description: |
+                  The IDs and names of the available statuses.
+        '401':
+          description: Valid API key required
+        '500':
+          description: Internal server error
+  /https://host/osTicketBase/http.php/topics.json:
     description: This resource handles all topic-related operations
     get:
       tags:
-        - Topics
+        - Ticket Topics
       summary: Get topic IDs
       description: |
-        Retrieves a list of topic IDs available in the system.
+        Retrieves a list of ticket topic IDs available in the system.
 
-        The response contains a list of topic IDs that can be used to reference specific topics when creating or updating tickets.
+        The response contains a list of topic IDs that can be used to
+        reference specific topics when creating or updating tickets.
+
+        NOTE: For ease of identification, topic names are provided alongside their respective IDs in
+        the response.
       operationId: getTopicIds
       security:
         - APIKeyAuth: []
@@ -1060,26 +1330,45 @@ paths:
               schema:
                 type: object
                 properties:
-                  ticketIds:
+                  topics:
                     type: array
                     items:
-                      type: integer
-                example: { "topicIds": [1, 2, 3] }
-                description: The IDs of the available topics.
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    example:
+                      - id: 1
+                        name: "Topic A"
+                      - id: 2
+                        name: "Topic B"
+                      - id: 3
+                        name: "Topic C"
+                description: |
+                  The IDs and names of the available topics.
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     post:
       tags:
-        - Topics
+        - Ticket Topics
       summary: Create a new topic
       description: |
         This endpoint allows the creation of a new topic in the system.
 
         To create a new topic, the request body must include the following parameters:
+        
         - `topic`: The name of the topic.
+        
         - `isPublic`: A boolean value indicating whether the topic is publicly visible.
+        
         - `deptId`: The ID of the department associated with this topic. (optional)
+        
         - `priorityId`: The ID of the priority associated with this topic. (optional)
+        
         - `slaId`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
 
         If `deptId`, `priorityId` or `slaId` aren't provided, the system's default values will be used.
@@ -1132,20 +1421,31 @@ paths:
           description: Syntax error, malformed JSON
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     put:
       tags:
-        - Topics
+        - Ticket Topics
       summary: Update an existing topic
       description: |
         This endpoint allows the update of an existing topic in the system.
 
         To update a topic, the request body must include the following parameters:
+        
         - `topicId`: The topic's ID.
+        
         - `topic`: The name of the topic. (optional)
+        
         - `isPublic`: A boolean value indicating whether the topic is publicly visible. (optional)
+        
         - `deptId`: The ID of the department associated with this topic. (optional)
+        
         - `priorityId`: The ID of the priority associated with this topic. (optional)
+        
         - `slaId`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
+
+        NOTE: All updatable properties are optional, meaning, the client can choose which properties to update.
+        If no updatable property is provided, an error message will be returned.
       operationId: updateTopic
       security:
         - APIKeyAuth: []
@@ -1186,12 +1486,14 @@ paths:
         '204':
           description: Topic updated successfully
         '400':
-          description: Syntax error, malformed JSON
+          $ref: "#/components/responses/BadRequest"
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     delete:
       tags:
-        - Topics
+        - Ticket Topics
       summary: Delete an existing topic
       description: |
         This endpoint allows the deletion of an existing topic in the system.
@@ -1216,7 +1518,9 @@ paths:
           description: Valid API key required
         '404':
           description: Topic not found
-  /http.php/users.json:
+        '500':
+          description: Internal server error
+  /https://host/osTicketBase/http.php/users.json:
     description: This resource handles all user-related operations
     get:
       tags:
@@ -1228,6 +1532,9 @@ paths:
         User IDs are unique identifiers assigned to each user.
 
         The response will include an array of user IDs.
+
+        NOTE: For ease of identification, user names are provided alongside their respective IDs in
+        the response.
       operationId: getUserIds
       security:
         - APIKeyAuth: []
@@ -1239,14 +1546,28 @@ paths:
               schema:
                 type: object
                 properties:
-                  ticketIds:
+                  users:
                     type: array
                     items:
-                      type: integer
-                example: { "userIds": [1, 2, 3] }
-                description: The IDs of the available users.
+                      type: object
+                      properties:
+                        id:
+                          type: integer
+                        name:
+                          type: string
+                    example:
+                      - id: 1
+                        name: "User A"
+                      - id: 2
+                        name: "User B"
+                      - id: 3
+                        name: "User C"
+                description: |
+                  The IDs and names of the available users.
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     post:
       tags:
         - Users
@@ -1255,7 +1576,9 @@ paths:
         This endpoint allows the creation of a new user in the system.
 
         To create a new user, the request body must include the following parameters:
+        
         - `name`: The user's name.
+        
         - `email`: The user's email address.
 
         This endpoint returns the ID and the initial password of the newly created user.
@@ -1298,6 +1621,8 @@ paths:
           description: Syntax error, malformed JSON
         '401':
           description: Valid API key required
+        '500':
+          description: Internal server error
     put:
       tags:
       - Users
@@ -1306,9 +1631,15 @@ paths:
         This endpoint allows the update of a user in the system.
 
         To update a user, the request body may include the following parameters:
+        
         - `userId`: The ID of the user to update.
+        
         - `name`: The user's name. (optional)
+        
         - `email`: The user's email address. (optional)
+
+        NOTE: All updatable properties are optional, meaning, the client can choose which properties to update.
+        If no updatable property is provided, an error message will be returned.
       operationId: updateUser
       security:
         - APIKeyAuth: []
@@ -1335,11 +1666,13 @@ paths:
         '204':
           description: User updated successfully
         '400':
-          description: Syntax error, malformed JSON
+          $ref: "#/components/responses/BadRequest"
         '401':
           description: Valid API key required
         '404':
           description: User not found
+        '500':
+          description: Internal server error
     delete:
       tags:
         - Users
@@ -1367,9 +1700,23 @@ paths:
           description: Valid API key required
         '404':
           description: User not found
+        '500':
+          description: Internal server error
 components:
   securitySchemes:
     APIKeyAuth:
       type: apiKey
       in: header
       name: X-API-Key
+  responses:
+    BadRequest:
+      description: Syntax error, malformed JSON or missing updatable properties
+      content:
+        text/plain:
+          schema:
+            type: string
+          examples:
+            syntax_error:
+              value: Syntax error, malformed JSON
+            missing_properties:
+              value: Missing updatable properties
