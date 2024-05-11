@@ -21,6 +21,11 @@ class API {
 
     var $ht;
 
+    const ERR_MISSING_ID = "Missing required ID";
+    const ERR_MISSING_UPDATABLE_PROPERTIES = "Missing updatable properties";
+    const ERR_INVALID_QUERY_PARAMETER = "Invalid query parameter";
+    const ERR_INTERNAL_SERVER_ERROR = "Internal server error";
+    
     function __construct($id) {
         $this->id = 0;
         $this->load($id);
@@ -91,7 +96,7 @@ class API {
         $sql='DELETE FROM '.API_KEY_TABLE.' WHERE id='.db_input($this->getId()).' LIMIT 1';
         return (db_query($sql) && ($num=db_affected_rows()));
     }
-
+    
     /** Static functions **/
     static function add($vars, &$errors) {
         return API::save(0, $vars, $errors);
@@ -298,7 +303,7 @@ class ApiController extends Controller {
         }
         return true;
     }
-
+    
     /**
      * Validate request.
      *
@@ -309,6 +314,16 @@ class ApiController extends Controller {
                 $this->getRequestStructure($format, $data),
                 "",
                 $strict);
+    }
+
+    /**
+    * Ensures that the API key is valid before calling the provided function
+    * with optional parameters. It serves as a generic wrapper for executing
+    * requests that require API key validation.
+    */
+    function validateAndExecute($func, $params=null) {
+        $this->requireApiKey();
+        $func($params);
     }
 
     protected function debug($subj, $msg) {

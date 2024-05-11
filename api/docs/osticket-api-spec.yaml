@@ -133,11 +133,13 @@ paths:
         
         - `name`: The name of the department.
 
-        - `isPublic`: A boolean value indicating whether the department is publicly visible.
+        - `ispublic`: A string representation of a boolean value indicating whether the department
+        is publicly visible. (optional)
         
-        - `slaId`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
+        - `sla_id`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
 
-        If `slaId` isn't provided, the department will use the system's default SLA.
+        If `ispublic` isn't provided, the department will be public by default. If `sla_id` isn't
+        provided, the department will use the system's default SLA.
 
         This endpoint returns the ID of the newly created department.
       operationId: createDepartment
@@ -153,10 +155,12 @@ paths:
                 name:
                   type: string
                   description: The name of the department.
-                isPublic:
-                  type: boolean
-                  description: A boolean value indicating whether the department is publicly visible.
-                slaId:
+                ispublic:
+                  type: string
+                  description: A string representation of a boolean value indicating whether the department
+                    is publicly visible.
+                  example: "1"
+                sla_id:
                   type: integer
                   description: The ID of the Service-Level Agreement (SLA) associated with the department.
                   required:
@@ -172,7 +176,7 @@ paths:
                 example: 3
                 description: The ID of the newly created department.
         '400':
-          description: Syntax error, malformed JSON
+          $ref: "#/components/responses/BadRequest2"
         '401':
           description: Valid API key required
         '500':
@@ -186,13 +190,14 @@ paths:
 
         To update a department, the request body must include the following parameters:
 
-        - `deptId`: The department's ID.
+        - `id`: The department's ID.
         
         - `name`: The name of the department. (optional)
         
-        - `isPublic`: A boolean value indicating whether the department is publicly visible. (optional)
+        - `ispublic`: A string representation of a boolean value indicating whether the department
+        is publicly visible. (optional)
         
-        - `slaId`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
+        - `sla_id`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
 
         NOTE: All updatable properties are optional, meaning, the client can choose which properties to update.
         If no updatable property is provided, an error message will be returned.
@@ -206,27 +211,31 @@ paths:
             schema:
               type: object
               properties:
-                deptId:
+                id:
                   type: integer
                   description: The department's ID.
                 name:
                   type: string
                   description: The name of the department.
-                isPublic:
-                  type: boolean
-                  description: A boolean value indicating whether the department is publicly visible.
-                slaId:
+                ispublic:
+                  type: string
+                  description: A string representation of a boolean value indicating whether the department
+                    is publicly visible.
+                  example: "1"
+                sla_id:
                   type: integer
                   description: The ID of the Service-Level Agreement (SLA) associated with the department.
                   required:
-                    - deptId
+                    - id
       responses:
         '204':
           description: Department updated successfully
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: '#/components/responses/BadRequest3'
         '401':
           description: Valid API key required
+        '404':
+          description: Department not found
         '500':
           description: Internal server error
     delete:
@@ -236,13 +245,13 @@ paths:
       description: |
         This endpoint allows the deletion of an existing department in the system.
 
-        To delete a department, provide the department's ID, `deptId`, as a query parameter.
+        To delete a department, provide the department's ID, `id`, as a query parameter.
       operationId: deleteDepartment
       security:
         - APIKeyAuth: []
       parameters:
         - in: query
-          name: deptId
+          name: id
           schema:
             type: integer
           description: The ID of the department to be deleted.
@@ -350,7 +359,7 @@ paths:
                 example: 2
                 description: The ID of the newly created SLA.
         '400':
-          description: Syntax error, malformed JSON
+          $ref: "#/components/responses/BadRequest2"
         '401':
           description: Valid API key required
         '500':
@@ -398,7 +407,7 @@ paths:
         '204':
           description: SLA updated successfully
         '400':
-          $ref: '#/components/responses/BadRequest'
+          $ref: '#/components/responses/BadRequest3'
         '401':
           description: Valid API key required
         '404':
@@ -1710,7 +1719,7 @@ components:
       name: X-API-Key
   responses:
     BadRequest:
-      description: Syntax error, malformed JSON or missing updatable properties
+      description: Syntax error, missing ID or missing updatable properties
       content:
         text/plain:
           schema:
@@ -1720,3 +1729,31 @@ components:
               value: Syntax error, malformed JSON
             missing_properties:
               value: Missing updatable properties
+            missing_id:
+              value: Missing required ID
+    BadRequest2:
+      description: Syntax error or invalid name
+      content:
+        text/plain:
+          schema:
+            type: string
+          examples:
+            syntax_error:
+              value: Syntax error, malformed JSON
+            invalid_name:
+              value: "name: Department already exists"
+    BadRequest3:
+      description: Syntax error, missing ID, missing updatable properties or invalid name
+      content:
+        text/plain:
+          schema:
+            type: string
+          examples:
+            syntax_error:
+              value: Syntax error, malformed JSON
+            missing_properties:
+              value: Missing updatable properties
+            missing_id:
+              value: Missing required ID
+            invalid_name:
+              value: "name: Department already exists"

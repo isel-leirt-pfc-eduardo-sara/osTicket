@@ -133,6 +133,13 @@ class UrlMatcher {
         else $args = $this->matches;
         # Add in static args specified in the constructor
         $args = array_merge($args, $this->args);
+        
+        // Access query parameters
+        $query_params = $_GET;
+
+        // Merge query parameters with other arguments
+        $args = array_merge($args, $query_params);
+        
         # Apply the $prefix given
         list($class, $func) = $this->apply_prefix();
         if ($class) {
@@ -153,7 +160,7 @@ class UrlMatcher {
         return call_user_func_array($func, $args);
     }
     /**
-     * For the $prefix recieved by the constuctor, prepend it to the
+     * For the $prefix received by the constructor, prepend it to the
      * received $class, if any, then make an import if necessary. Lastly,
      * return the appropriate $class, and $func that should be invoked to
      * dispatch the URL.
@@ -192,6 +199,10 @@ function url($regex, $func, $args=false, $method=false) {
 
 function url_post($regex, $func, $args=false) {
     return url($regex, $func, $args, "POST");
+}
+
+function url_put($regex, $func, $args=false) {
+    return url($regex, $func, $args, "PUT");
 }
 
 function url_get($regex, $func, $args=false) {
