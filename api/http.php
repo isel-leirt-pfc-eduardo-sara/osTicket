@@ -21,10 +21,15 @@ $dispatcher = patterns('',
                 url_post("^cron$", array('api.cron.php:CronApiController', 'execute'))
          )),
         // Departments
-        url_get("^/departments\.xml|json|email$", array('api.depts.php:DeptApiController','getDepartments')),
+        url_get("^/departments\.(xml|json|email)$", array('api.depts.php:DeptApiController','getDepartments')),
         url_post("^/departments\.(?P<format>xml|json|email)$", array('api.depts.php:DeptApiController','createDepartment')),
         url_put("^/departments\.(?P<format>xml|json|email)$", array('api.depts.php:DeptApiController','updateDepartment')),
-        url_delete("^/departments\.xml|json|email", array('api.depts.php:DeptApiController','deleteDepartment')),
+        url_delete("^/departments", array('api.depts.php:DeptApiController','deleteDepartment')),
+        // Staff
+        url_get("^/staff\.(xml|json|email)$", array('api.staff.php:StaffApiController','getStaffMembers')),
+        url_post("^/staff\.(?P<format>xml|json|email)$", array('api.staff.php:StaffApiController','createStaffMember')),
+        url_put("^/staff\.(?P<format>xml|json|email)$", array('api.staff.php:StaffApiController','updateStaffMember')),
+        url_delete("^/staff", array('api.staff.php:StaffApiController','deleteStaffMember')),
         // Tickets
         url_post("^/tickets\.(?P<format>xml|json|email)$", array('api.tickets.php:TicketApiController','create'))
     );

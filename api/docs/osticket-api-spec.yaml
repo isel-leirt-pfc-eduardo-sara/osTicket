@@ -98,7 +98,7 @@ paths:
               schema:
                 type: object
                 properties:
-                  deptIds:
+                  depts:
                     type: array
                     items:
                       type: object
@@ -110,7 +110,7 @@ paths:
                           type: string
                           description: The name of the department.
                 example: 
-                  deptIds:
+                  depts:
                     - id: 1
                       name: Department A
                     - id: 2
@@ -456,7 +456,7 @@ paths:
 
         The response will include an array of staff IDs.
 
-        NOTE: For ease of identification, the staff members' names are provided alongside their
+        NOTE: For ease of identification, the staff members' names, usernames, and email addresses are provided alongside their
         respective IDs in the response.
       operationId: getStaffIds
       security:
@@ -478,13 +478,23 @@ paths:
                           type: integer
                         name:
                           type: string
-                    example:
-                      - id: 1
-                        name: "John Doe"
-                      - id: 2
-                        name: "Jane Smith"
-                      - id: 5
-                        name: "Alice Johnson"
+                        username:
+                          type: string
+                        email:
+                          type: string
+                example:
+                  - id: 1
+                    name: "John Doe"
+                    username: "jdoe"
+                    email: "jdoe@example.com"
+                  - id: 2
+                    name: "Jane Smith"
+                    username: "jsmith"
+                    email: "jsmith@example.com"
+                  - id: 5
+                    name: "Alice Johnson"
+                    username: "ajohnson"
+                    email: "ajohnson@example.com"
                 description: |
                   The IDs and names of the available staff members.
         '401':
@@ -500,19 +510,23 @@ paths:
 
         To create a new staff member, the request body must include the following parameters:
         
-        - `firstName`: The staff member's first name.
+        - `firstname`: The staff member's first name.
         
-        - `lastName`: The staff member's last name.
+        - `lastname`: The staff member's last name.
         
         - `username`: The staff member's username.
         
         - `email`: The staff member's email address.
         
-        - `dptId`: The staff member's primary department.
+        - `dept_id`: The staff member's primary department.
         
-        - `isAdmin`: A boolean value indicating whether the staff member has administrative privileges.
+        - `isadmin`: A boolean value indicating whether the staff member has administrative privileges.
 
         This endpoint returns the ID and the initial password of the newly created staff member.
+
+        NOTE: Upon successful creation of the staff member, an email will be automatically sent to the
+        provided email address containing instructions on how to reset the password. This ensures the
+        security of the account and allows the staff member to set their own unique password.
       operationId: createStaff
       security:
         - APIKeyAuth: []
@@ -523,10 +537,10 @@ paths:
             schema:
               type: object
               properties:
-                firstName:
+                firstname:
                   type: string
                   description: The staff member's first name.
-                lastName:
+                lastname:
                   type: string
                   description: The staff member's last name.
                 username:
@@ -536,19 +550,19 @@ paths:
                   type: string
                   format: email
                   description: The staff member's email address.
-                deptId:
+                dept_id:
                   type: integer
                   description: The ID of the staff member's primary department.
-                isAdmin:
+                isadmin:
                   type: boolean
                   description: A boolean value indicating whether the staff member has administrative privileges.
               required:
-                - firstName
-                - lastName
+                - firstname
+                - lastname
                 - username
                 - email
-                - deptId
-                - isAdmin
+                - dept_id
+                - isadmin
       responses:
         '201':
           description: Staff member created successfully
@@ -557,15 +571,29 @@ paths:
               schema:
                 type: object
                 properties:
-                  staffId:
+                  id:
                     type: integer
                     description: The ID of the newly created staff member.
                   passwd:
                     type: string
+                    example: "changeit"
                     description: The password of the newly created staff member.
                 description: The ID and password of the newly created staff member.
         '400':
-          description: Syntax error, malformed JSON
+          description: Syntax error or invalid input
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                syntax_error:
+                  value: Syntax error, malformed JSON
+                invalid_email:
+                  value: "email: Email already in use by another agent"
+                invalid_username:
+                  value: "username: Username already in use"
+                invalid_dept_id:
+                  value: "dept_id: Department not found"
         '401':
           description: Valid API key required
         '500':
@@ -579,19 +607,19 @@ paths:
 
         To update a staff member, the request body may include the following parameters:
         
-        - `staffId`: The ID of the staff member to update.
+        - `id`: The ID of the staff member to update.
         
-        - `firstName`: The staff member's first name. (optional)
+        - `firstname`: The staff member's first name. (optional)
         
-        - `lastName`: The staff member's last name. (optional)
+        - `lastname`: The staff member's last name. (optional)
         
         - `username`: The staff member's username. (optional)
         
         - `email`: The staff member's email address. (optional)
         
-        - `dptId`: The staff member's primary department. (optional)
+        - `dept_id`: The staff member's primary department. (optional)
         
-        - `isAdmin`: A boolean value indicating whether the staff member has administrative privileges. (optional)
+        - `isadmin`: A boolean value indicating whether the staff member has administrative privileges. (optional)
 
         NOTE: All updatable properties are optional, meaning, the client can choose which properties to update.
         If no updatable property is provided, an error message will be returned.
@@ -605,13 +633,13 @@ paths:
             schema:
               type: object
               properties:
-                staffId:
+                id:
                   type: integer
                   description: The ID of the staff member to update.
-                firstName:
+                firstname:
                   type: string
                   description: The staff member's first name.
-                lastName:
+                lastname:
                   type: string
                   description: The staff member's last name.
                 username:
@@ -621,19 +649,38 @@ paths:
                   type: string
                   format: email
                   description: The staff member's email address.
-                deptId:
+                dept_id:
                   type: integer
                   description: The ID of the staff member's primary department.
-                isAdmin:
+                isadmin:
                   type: boolean
                   description: A boolean value indicating whether the staff member has administrative privileges.
               required:
-                - staffId
+                - id
       responses:
         '204':
           description: Staff member updated successfully
         '400':
-          $ref: "#/components/responses/BadRequest"
+          description: Syntax error, missing ID, missing updatable properties or invalid input
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                syntax_error:
+                  value: Syntax error, malformed JSON
+                missing_properties:
+                  value: Missing updatable properties
+                missing_id:
+                  value: Missing required ID
+                invalid_email:
+                  value: "email: Email already in use by another agent"
+                invalid_username:
+                  value: "username: Username already in use"
+                invalid_dept_id:
+                  value: "dept_id: Department not found"
+                invalid_id:
+                  value: "id: Staff member not found"
         '401':
           description: Valid API key required
         '404':
@@ -647,13 +694,13 @@ paths:
       description: |
         This endpoint allows the deletion of an existing staff member in the system.
 
-        To delete a staff member, provide the staff member's ID, `staffId`, as a query parameter.
+        To delete a staff member, provide the staff member's ID, `id`, as a query parameter.
       operationId: deleteStaff
       security:
         - APIKeyAuth: []
       parameters:
         - in: query
-          name: staffId
+          name: id
           schema:
             type: integer
           description: The ID of the staff member to be deleted.

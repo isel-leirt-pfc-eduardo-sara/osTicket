@@ -21,21 +21,21 @@ class DeptApiController extends ApiController {
     }
     
     function _getDepartments() {
-        $deptIds = array();
         $deptNames = Dept::getDepartments();
         
+        $depts = array();
         foreach ($deptNames as $name) {
             $id = Dept::getIdByName($name);
             if ($id) {
-                $deptIds[] = array(
+                $depts[] = array(
                     'id' => $id,
                     'name' => $name
                 );
             } else { break; }
         }
         
-        if ($deptIds) {
-            $resp = json_encode(array('deptIds' => $deptIds), JSON_PRETTY_PRINT);
+        if ($depts) {
+            $resp = json_encode(array('depts' => $depts), JSON_PRETTY_PRINT);
             $this->response(200, $resp);
         } else {
             $this->exerr(500, _S(API::ERR_INTERNAL_SERVER_ERROR));
@@ -81,12 +81,17 @@ class DeptApiController extends ApiController {
         
         $errors = array();
         $dept->update($vars, $errors);
+        
+        if ($errors) {
+            $this->exerr(400, _S($errors));
+        } 
+        
         $dept->save();
         
         if ($dept) {
             $this->response(204, _S("Department updated successfully"));
         } else {
-            $this->exerr(500, _S($errors));
+            $this->exerr(500, _S(API::ERR_INTERNAL_SERVER_ERROR));
         }
     }
     
