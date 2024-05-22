@@ -101,7 +101,6 @@ class DeptApiController extends ApiController {
         }
         
         $dept = Dept::lookup($id);
-        
         if (!$dept) {
             $this->response(404, _S("Department not found"));
         }

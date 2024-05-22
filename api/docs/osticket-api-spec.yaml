@@ -773,9 +773,12 @@ paths:
         
         - `name`: The name of the team.
         
-        - `teamMembersIds`: The IDs of the staff members that are part of this team. (optional)
+        - `members`: The IDs of the staff members that are part of this team. (optional)
 
         This endpoint returns the ID of the newly created team.
+
+        NOTE: If any members specified in `members` are invalid (i.e., they do not exist),
+        the team will still be created, but no members will be assigned to it.
       operationId: createTeam
       security:
         - APIKeyAuth: []
@@ -789,7 +792,7 @@ paths:
                 name:
                   type: string
                   description: The name of the team.
-                teamMembersIds:
+                members:
                   type: array
                   items:
                     type: integer
@@ -808,7 +811,20 @@ paths:
                 example: 2
                 description: The ID of the newly created Team.
         '400':
-          description: Syntax error, malformed JSON
+          description: Syntax error, missing name, invalid name or invalid team members
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                syntax_error:
+                  value: Syntax error, malformed JSON
+                missing_name:
+                  value: "name: Team name is required"
+                invalid_name:
+                  value: "name: Team name already exists"
+                invalid_staff_member:
+                  value: "members: No such agent"
         '401':
           description: Valid API key required
         '500':
@@ -822,14 +838,16 @@ paths:
 
         To update a team, the request body must include the following parameters:
         
-        - `teamId`: The ID of the team.
+        - `id`: The ID of the team.
         
         - `name`: The name of the team. (optional)
         
-        - `teamMembersIds`: The IDs of the staff members that are part of this team. (optional)
+        - `members`: The IDs of the staff members that are part of this team. (optional)
       
         NOTE: All updatable properties are optional, meaning, the client can choose which properties to update.
-        If no updatable property is provided, an error message will be returned.
+        If no updatable property is provided, an error message will be returned. If any members specified in
+        `members` are invalid (i.e., they do not exist), the team will still be updated, but its members will
+        remain unchanged. To remove all members from a team, pass an empty array as the value for the `members` parameter.
       operationId: updateTeam
       security:
         - APIKeyAuth: []
@@ -840,13 +858,13 @@ paths:
             schema:
               type: object
               properties:
-                teamId:
+                id:
                   type: integer
                   description: The ID of the team.
                 name:
                   type: string
                   description: The name of the team.
-                teamMembersIds:
+                members:
                   type: array
                   items:
                     type: integer
@@ -854,14 +872,31 @@ paths:
                   description: The IDs of the staff members that are part of this team.
                   example: [1, 2]
                   required:
-                    - teamId
+                    - id
       responses:
         '204':
           description: Team updated successfully
         '400':
-          $ref: "#/components/responses/BadRequest"
+          description: Syntax error, missing updatable properties, invalid name or invalid team members
+          content:
+            text/plain:
+              schema:
+                type: string
+              examples:
+                syntax_error:
+                  value: Syntax error, malformed JSON
+                missing_properties:
+                  value: Missing updatable properties
+                missing_id:
+                  value: Missing required ID
+                invalid_name:
+                  value: "name: Team name already exists"
+                invalid_staff_member:
+                  value: "members: No such agent"
         '401':
           description: Valid API key required
+        '404':
+          description: Team not found
         '500':
           description: Internal server error
     delete:
@@ -871,13 +906,13 @@ paths:
       description: |
         This endpoint allows the deletion of an existing team in the system.
 
-        To delete a team, provide the team's ID, `teamId`, as a query parameter.
+        To delete a team, provide the team's ID, `id`, as a query parameter.
       operationId: deleteTeam
       security:
         - APIKeyAuth: []
       parameters:
         - in: query
-          name: teamId
+          name: id
           schema:
             type: integer
           description: The ID of the team to be deleted.

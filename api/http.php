@@ -30,6 +30,11 @@ $dispatcher = patterns('',
         url_post("^/staff\.(?P<format>xml|json|email)$", array('api.staff.php:StaffApiController','createStaffMember')),
         url_put("^/staff\.(?P<format>xml|json|email)$", array('api.staff.php:StaffApiController','updateStaffMember')),
         url_delete("^/staff", array('api.staff.php:StaffApiController','deleteStaffMember')),
+        // Teams
+        url_get("^/teams\.(xml|json|email)$", array('api.teams.php:TeamsApiController','getTeams')),
+        url_post("^/teams\.(?P<format>xml|json|email)$", array('api.teams.php:TeamsApiController','createTeam')),
+        url_put("^/teams\.(?P<format>xml|json|email)$", array('api.teams.php:TeamsApiController','updateTeam')),
+        url_delete("^/teams", array('api.teams.php:TeamsApiController','deleteTeam')),
         // Tickets
         url_post("^/tickets\.(?P<format>xml|json|email)$", array('api.tickets.php:TicketApiController','create'))
     );

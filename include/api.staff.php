@@ -123,7 +123,7 @@ class StaffApiController extends ApiController {
         }
         
         if (!$vars['firstname'] && !$vars['lastname'] && !$vars['username'] &&
-            !$vars['email'] && !$vars['dept_id'] && !$vars['isadmin']) {
+            !$vars['email'] && !$vars['dept_id'] && !isset($vars['isadmin'])) {
             $this->response(400, _S(API::ERR_MISSING_UPDATABLE_PROPERTIES));
         }
         
