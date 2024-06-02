@@ -326,7 +326,7 @@ paths:
         
         - `name`: The name of the SLA.
         
-        - `gracePeriod`: The grace period, in hours, for resolving tickets within the SLA timeframe.
+        - `grace_period`: The grace period, in hours, for resolving tickets within the SLA timeframe.
 
         This endpoint returns the ID of the newly created SLA.
       operationId: createSla
@@ -342,13 +342,13 @@ paths:
                 name:
                   type: string
                   description: The name of the SLA.
-                gracePeriod:
+                grace_period:
                   type: integer
                   description: The grace period, in hours, for resolving tickets within the SLA timeframe.
                   example: 72
                   required:
                     - name
-                    - gracePeriod
+                    - grace_period
       responses:
         '201':
           description: SLA created successfully
@@ -373,11 +373,11 @@ paths:
 
         To update a SLA, the request body may include the following parameters:
         
-        - `slaId`: The ID of the SLA.
+        - `id`: The ID of the SLA.
         
         - `name`: The name of the SLA. (optional)
         
-        - `gracePeriod`: The grace period, in hours, for resolving tickets within the SLA timeframe. (optional)
+        - `grace_period`: The grace period, in hours, for resolving tickets within the SLA timeframe. (optional)
 
         NOTE: All updatable properties are optional, meaning, the client can choose which properties to update.
         If no updatable property is provided, an error message will be returned.
@@ -391,18 +391,18 @@ paths:
             schema:
               type: object
               properties:
-                slaId:
+                id:
                   type: integer
                   description: The ID of the SLA.
                 name:
                   type: string
                   description: The name of the SLA.
-                gracePeriod:
+                grace_period:
                   type: integer
                   description: The grace period, in hours, for resolving tickets within the SLA timeframe.
                   example: 72
                   required:
-                    - slaId
+                    - id
       responses:
         '204':
           description: SLA updated successfully
@@ -421,13 +421,13 @@ paths:
       description: |
         This endpoint allows the deletion of an existing SLA in the system.
 
-        To delete an SLA, provide the SLA's ID, `slaId`, as a query parameter.
+        To delete an SLA, provide the SLA's ID, `id`, as a query parameter.
       operationId: deleteSla
       security:
         - APIKeyAuth: []
       parameters:
         - in: query
-          name: slaId
+          name: id
           schema:
             type: integer
           description: The ID of the SLA to be deleted.
@@ -1456,13 +1456,13 @@ paths:
         
         - `isPublic`: A boolean value indicating whether the topic is publicly visible.
         
-        - `deptId`: The ID of the department associated with this topic. (optional)
+        - `dept_id`: The ID of the department associated with this topic. (optional)
         
-        - `priorityId`: The ID of the priority associated with this topic. (optional)
+        - `priority_id`: The ID of the priority associated with this topic. (optional)
         
-        - `slaId`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
+        - `sla_id`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
 
-        If `deptId`, `priorityId` or `slaId` aren't provided, the system's default values will be used.
+        If `dept_id`, `priority_id` or `sla_id` aren't provided, the system's default values will be used.
 
         This endpoint returns the ID of the newly created topic.
       operationId: createTopic
@@ -1481,17 +1481,17 @@ paths:
                 isPublic:
                   type: boolean
                   description: A boolean value indicating whether the topic is publicly visible.
-                deptId:
+                dept_id:
                   type: integer
                   description: The ID of the department associated with this topic.
                   nullable: true
                   example: 123
-                priorityId:
+                priority_id:
                   type: integer
                   description: The ID of the priority associated with this topic.
                   nullable: true
                   example: 4
-                slaId:
+                sla_id:
                   type: integer
                   description: The ID of the Service-Level Agreement (SLA) associated with the department.
                   nullable: true
@@ -1523,17 +1523,17 @@ paths:
 
         To update a topic, the request body must include the following parameters:
         
-        - `topicId`: The topic's ID.
+        - `id`: The topic's ID.
         
         - `topic`: The name of the topic. (optional)
         
-        - `isPublic`: A boolean value indicating whether the topic is publicly visible. (optional)
+        - `ispublic`: A boolean value indicating whether the topic is publicly visible. (optional)
         
-        - `deptId`: The ID of the department associated with this topic. (optional)
+        - `dept_id`: The ID of the department associated with this topic. (optional)
         
-        - `priorityId`: The ID of the priority associated with this topic. (optional)
+        - `priority_id`: The ID of the priority associated with this topic. (optional)
         
-        - `slaId`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
+        - `sla_id`: The ID of the Service-Level Agreement (SLA) associated with the department. (optional)
 
         NOTE: All updatable properties are optional, meaning, the client can choose which properties to update.
         If no updatable property is provided, an error message will be returned.
@@ -1547,32 +1547,32 @@ paths:
             schema:
               type: object
               properties:
-                topicId:
+                id:
                   type: integer
                   description: The topic's ID.
                 topic:
                   type: string
                   description: The name of the topic.
-                isPublic:
+                ispublic:
                   type: boolean
                   description: A boolean value indicating whether the topic is publicly visible.
-                deptId:
+                dept_id:
                   type: integer
                   description: The ID of the department associated with this topic.
                   nullable: true
                   example: 123
-                priorityId:
+                priority_id:
                   type: integer
                   description: The ID of the priority associated with this topic.
                   nullable: true
                   example: 4
-                slaId:
+                sla_id:
                   type: integer
                   description: The ID of the Service-Level Agreement (SLA) associated with the department.
                   nullable: true
                   example: 1
                   required:
-                    - topicId
+                    - id
       responses:
         '204':
           description: Topic updated successfully
@@ -1589,13 +1589,13 @@ paths:
       description: |
         This endpoint allows the deletion of an existing topic in the system.
 
-        To delete a topic, provide the topic's ID, `topicId`, as a query parameter.
+        To delete a topic, provide the topic's ID, `id`, as a query parameter.
       operationId: deleteTopic
       security:
         - APIKeyAuth: []
       parameters:
         - in: query
-          name: topicId
+          name: id
           schema:
             type: integer
           description: The ID of the topic to be deleted.

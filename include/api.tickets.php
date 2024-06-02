@@ -105,7 +105,7 @@ class TicketApiController extends ApiController {
 
     function create($format) {
 
-        if (!($key=$this->requireApiKey()) || !$key->canCreateTickets())
+        if (!($key=$this->requireApiKey()) || !$key->canCreateTickets()) //class.api.php
             return $this->exerr(401, __('API key not authorized'));
 
         $ticket = null;
@@ -114,10 +114,8 @@ class TicketApiController extends ApiController {
             $ticket = $this->processEmailRequest();
         } else {
             // Get and Parse request body data for the format
-            $ticket = $this->createTicket($this->getRequest($format));
+            $ticket = $this->createTicket($this->getRequest($format)); // class.api.php
         }
-
-
 
         if ($ticket)
             $this->response(201, $ticket->getNumber());
@@ -125,8 +123,335 @@ class TicketApiController extends ApiController {
             $this->exerr(500, _S("unknown error"));
 
     }
+    
+    function updateTicket($format){
+        $this->validateAndExecute([$this, '_updateTicket'],  $format);
+    }
+
+    function deleteTicket($id=null){
+        $this->validateAndExecute([$this, '_deleteTicket'],  $id);
+    }
+
+    function getTickets($title=null, $number=null, $status=null,
+    $topicId=null, $priorityId=null, $deptId=null, $staffId=null, 
+    $teamId=null, $createdDate=null){
+        // Extracting query parameters
+        $query = $_GET;
+        $this->validateAndExecute([$this, '_getTickets'], $query);
+    }
 
     /* private helper functions */
+
+    function _updateTicket ($format){ //To be checked
+        $data = $this->getRequest($format);
+
+        if (!$data['id']) {
+            $this->response(400, _S(API::ERR_MISSING_ID));
+        }
+        
+        if (!$data['priorityId'] && !$data['topicId'] 
+            && !$data['slaId'] && !$data['deptId'] 
+            && !$data['staffId'] && !$data['teamId'] 
+            && !$data['statusId'] && !$data['message'] 
+            && !$data['reply'] && !$data['note'] 
+        ) {
+            $this->response(400, _S(API::ERR_MISSING_UPDATABLE_PROPERTIES));
+        }
+
+        $ticket = Ticket::lookup($data['id']);
+
+        if (!$ticket) {
+            $this->response(404, _S("Ticket not found"));
+        }
+
+        /* ERROR while trying to update PRIORITY and TOPIC parameters because 
+        of $thisstaff variable. Possible Solutions:
+            1º Approach:
+                global $thisstaff;
+                $thisstaff = Staff::create();
+            2º Approach:
+                global $thisstaff;
+                $thisstaff = Staff::lookup($ticket->getStaffId());
+        PS: both have failded so far!!
+       */
+
+        //  Update ticket properties with received data, if present
+        if (isset($data['priorityId'])) { 
+
+            $priority = Priority::lookup($data['priorityId']);
+            if ($priority) {
+                 $vars = array(
+                    'priorityId' => $data['priorityId'], 
+                    'note' => "",
+                    'duedate' => "",
+                    'source' => "API",
+                    'topicId' => $ticket->getTopicId(), 
+                    'userId' => $ticket->getUserId()
+                );
+            
+                $errors = array();
+                if ($ticket->update($vars, $errors)) {
+                    $this->response(204, _S("Ticket updated successfully"));
+                } else {
+                    $this->exerr(500, _S($errors));
+                    return;
+                }
+            }else {
+                $this->exerr(400, 'Invalid priority ID');
+                return;
+            }
+        }
+
+        if (isset($data['topicId'])) { 
+            $topic = Topic::lookup($data['topicId']); 
+            if ($topic) {
+                $vars = array(
+                    'topicId' => $data['topicId'],
+                    'note' => "",
+                    'duedate' => "",
+                    'source' => "API",
+                    'userId' => $ticket->getUserId()
+                );
+            
+                $errors = array();
+                if ($ticket->update($vars, $errors)) {
+                    $this->response(204, _S("Ticket updated successfully"));
+                } else {
+                    $this->exerr(500, _S($errors));
+                    return;
+                }
+            } else {
+                $this->exerr(400, 'Invalid topic ID');
+                return;
+            }
+        }
+
+        $slaId = null;
+        if (isset($data['slaId'])) {
+            $slaId = $data['slaId'];
+            if (!is_numeric($slaId)){
+                $this->response(400, _S(API::ERR_INVALID_QUERY_PARAMETER));
+                return;
+            }
+           if (!$ticket->setSLAId($data['slaId'])){
+                $this->response(400, _S(API::ERR_INVALID_QUERY_PARAMETER));
+                return;
+           }     
+        }
+
+        if (isset($data['deptId'])) { 
+           if (!$ticket->setDeptId($data['deptId'])) {
+                $this->response(400, _S(API::ERR_INVALID_QUERY_PARAMETER));
+                return;
+           }
+        }
+
+        if (isset($data['staffId'])) { 
+            if (!$ticket->setStaffId($data['staffId'])){
+                $this->response(400, _S(API::ERR_INVALID_QUERY_PARAMETER));
+                return;
+            }           
+        }
+
+        if (isset($data['teamId'])) { 
+            if (!$ticket->setTeamId($data['teamId'])){
+                $this->response(400, _S(API::ERR_INVALID_QUERY_PARAMETER));
+                return;
+            }
+        }
+        
+        $statusId = null;
+        if (isset($data['statusId'])) { 
+            $statusId = $data['statusId'];
+            if (!is_numeric($statusId)){ 
+                $this->response(400, _S(API::ERR_INVALID_QUERY_PARAMETER));
+                return;
+            }
+            $status = TicketStatus::lookup($statusId);
+            if(!$status){ 
+                $this->response(400, _S(API::ERR_INVALID_QUERY_PARAMETER));
+                return;
+            }
+            $ticket->setStatusId($data['statusId']);
+        }
+
+        // If there is a message, reply or note, add it to the ticket
+        if (isset($data['message'])) {
+            $vars = array(
+                'message' => $data['message'],
+                'userId' => $ticket->getUserId(), 
+                'origin' => 'web', 
+            );
+            $errors = array();
+            if (!$ticket->postMessage($vars, 'web', true)) {
+                $this->exerr(500, 'Unable to post message to ticket');
+                return;
+            }
+        }
+
+        if (isset($data['reply'])) {
+            $vars = array(
+                'response' => $data['reply'],
+                'staffId' => $ticket->getStaffId(),
+            );
+            $errors=[];
+
+            if (!$ticket->postReply($vars, $errors)) {
+                $this->exerr(500, 'Unable to post reply to ticket');
+                return;
+            }
+        }
+
+        if (isset($data['note'])) {
+            $vars = array(
+                'note' => $data['note'],
+                'staffId' => $ticket->getStaffId(),
+            );
+            $errors=[];
+            if (!$ticket->postNote($vars, $errors)) {
+                $this->exerr(500, 'Unable to post note to ticket');
+                return;
+            }
+        }
+    
+        if ($ticket->save()) {
+            $this->response(204, _S("Ticket updated successfully"));
+        } else {
+            $this->exerr(500, _S($errors));
+        }
+    }
+
+
+    function _deleteTicket($id=null) {
+        if (!$id || !is_numeric($id)) {
+            $this->response(400, _S(API::ERR_INVALID_QUERY_PARAMETER));
+        }
+        $ticket = Ticket::lookup($id);
+        
+        if (!$ticket) {
+            $this->response(404, _S("Ticket not found"));
+        }
+        
+        if ($ticket->delete()) {
+            $this->response(204, _S("Ticket deleted successfully"));
+        } else {
+            $this->exerr(500, _S(API::ERR_INTERNAL_SERVER_ERROR));
+        }
+    }
+
+    function _getTickets($query = []){
+
+        $criteria = [];
+        
+        if (isset($query['title'])) {
+            $criteria['subject'] = $query['title'];
+        }
+        if (isset($query['number'])) {
+            $criteria['number'] = $query['number'];
+        }
+        if (isset($query['status'])) {
+            $criteria['status_id'] = $query['status'];
+        }
+        if (isset($query['topicId'])) {
+            $criteria['topic_id'] = $query['topicId'];
+        }
+        if (isset($query['priorityId'])) {
+            $criteria['priority_id'] = $query['priorityId'];
+        }
+        if (isset($query['deptId'])) {
+            $criteria['dept_id'] = $query['deptId'];
+        }
+        if (isset($query['staffId'])) {
+            $criteria['staff_id'] = $query['staffId'];
+        }
+        if (isset($query['teamId'])) {
+            $criteria['team_id'] = $query['teamId'];
+        }
+        if (isset($query['createdDate'])) {
+            $criteria['created'] = $query['createdDate'];
+        }
+
+        $all_tickets = Ticket::objects()->all();
+        $results = [];
+
+        //Filtering tickets manually
+        foreach ($all_tickets as $ticket) {
+            $matches = true;
+            foreach ($criteria as $key => $value) {
+                switch ($key) {
+                    case 'subject':
+                        if (stripos($ticket->getSubject(), $value) === false) {
+                            $matches = false;
+                        }
+                        break;
+                    case 'number':
+                        if ($ticket->getNumber() != $value) {
+                            $matches = false;
+                        }
+                        break;
+                    case 'status_id':
+                        if ($ticket->getStatusId() != $value) {
+                            $matches = false;
+                        }
+                        break;
+                    case 'topic_id':
+                        if ($ticket->getTopicId() != $value) {
+                            $matches = false;
+                        }
+                        break;
+                    case 'priority_id':
+                        if ($ticket->getPriorityId() != $value) {
+                            $matches = false;
+                        }
+                        break;
+                    case 'dept_id':
+                        if ($ticket->getDeptId() != $value) {
+                            $matches = false;
+                        }
+                        break;
+                    case 'staff_id':
+                        if ($ticket->getStaffId() != $value) {
+                            $matches = false;
+                        }
+                        break;
+                    case 'team_id':
+                        if ($ticket->getTeamId() != $value) {
+                            $matches = false;
+                        }
+                        break;
+                    case 'created':
+                        $dateStr = $ticket->getCreateDate();
+                        $date = explode(' ', $dateStr);
+                        if ($date[0] != $value) {
+                            $matches = false;
+                        }
+                        break;
+                    default:
+                        $matches = false;
+                        break;
+                }
+                // If no criteria is meet, stop checking
+                if (!$matches) {
+                    break;
+                }
+            }
+
+            // Add the ticket to 'results' if it checks all the criterias
+            if ($matches) {
+                $results[] = [
+                    'ticket_id' => $ticket->getId(),
+                    'subject' => $ticket->getSubject()
+                ];
+            }
+        }
+
+        if ($results) {
+            $resp = json_encode(array('tickets' => $results), JSON_PRETTY_PRINT);
+            $this->response(200, $resp);
+        } else {
+            $this->exerr(500, _S(API::ERR_INTERNAL_SERVER_ERROR));
+        }
+    }
 
     function createTicket($data, $source = 'API') {
 
@@ -140,7 +465,7 @@ class TicketApiController extends ApiController {
         // Create the ticket with the data (attempt to anyway)
         $errors = array();
         if (($ticket = Ticket::create($data, $errors, $data['source'],
-                        $autorespond, $alert)) &&  !$errors)
+                        $autorespond, $alert)) &&  !$errors) //class.ticket.php (linha 4054)
             return $ticket;
 
         // Ticket create failed Bigly - got errors?
@@ -226,6 +551,8 @@ class TicketApiController extends ApiController {
     }
 }
 
+
+
 //Local email piping controller - no API key required!
 class PipeApiController extends TicketApiController {
 
@@ -288,3 +615,18 @@ class TicketDenied extends Exception {}
 class EmailParseError extends Exception {}
 
 ?>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
