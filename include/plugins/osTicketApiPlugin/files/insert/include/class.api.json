@@ -1,0 +1,26 @@
+[
+    {
+        "pattern": "/class API {/",
+        "newLines": [
+            "    const ERR_MISSING_ID = \"Missing required ID\";",
+            "    const ERR_MISSING_UPDATABLE_PROPERTIES = \"Missing updatable properties\";",
+            "    const ERR_INVALID_QUERY_PARAMETER = \"Invalid query parameter\";",
+            "    const ERR_INTERNAL_SERVER_ERROR = \"Internal server error\";"
+        ]
+    },
+    {
+        "pattern": "/(function validate\\(&\\$data, \\$format, \\$strict=true\\) \\{[^}]*\\})/s",
+        "newLines": [
+            "",
+            "    /**",
+            "    * Ensures that the API key is valid before calling the provided function",
+            "    * with optional parameters. It serves as a generic wrapper for executing",
+            "    * requests that require API key validation.",
+            "    */",
+            "    function validateAndExecute($func, $params=null) {",
+            "        $this->requireApiKey();",
+            "        $func($params);",
+            "    }"
+        ]
+    }
+]

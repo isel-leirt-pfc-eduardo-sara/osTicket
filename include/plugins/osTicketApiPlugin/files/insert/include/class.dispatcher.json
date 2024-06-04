@@ -1,0 +1,23 @@
+[
+    {
+        "pattern": "/(# Add in static args specified in the constructor\\s+\\$args = array_merge\\(\\$args, \\$this->args\\);)/",
+        "newLines": [
+            "",
+            "        // Access query parameters",
+            "        $query_params = $_GET;",
+            "",
+            "        // Merge query parameters with other arguments",
+            "        $args = array_merge($args, $query_params);",
+            ""
+        ]
+    },
+    {
+        "pattern": "/function url_get\\(\\$regex, \\$func, \\$args=false\\) {\\s+return url\\(\\$regex, \\$func, \\$args, \\\"GET\\\"\\);\\s+}/",
+        "newLines": [
+            "",
+            "function url_put($regex, $func, $args=false) {",
+            "    return url($regex, $func, $args, \"PUT\");",
+            "}"
+        ]
+    }
+]
