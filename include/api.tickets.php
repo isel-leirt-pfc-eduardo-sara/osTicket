@@ -132,9 +132,11 @@ class TicketApiController extends ApiController {
         $this->validateAndExecute([$this, '_deleteTicket'],  $id);
     }
 
-    function getTickets($title=null, $number=null, $status=null,
-    $topicId=null, $priorityId=null, $deptId=null, $staffId=null, 
-    $teamId=null, $createdDate=null){
+    function getTickets(
+        $subject=null, $number=null, $status=null,
+        $topicId=null, $priorityId=null, $deptId=null, 
+        $staffId=null, $teamId=null, $createdDate=null
+    ) {
         // Extracting query parameters
         $query = $_GET;
         $this->validateAndExecute([$this, '_getTickets'], $query);
@@ -142,7 +144,7 @@ class TicketApiController extends ApiController {
 
     /* private helper functions */
 
-    function _updateTicket ($format){ //To be checked
+    function _updateTicket ($format) {
         $data = $this->getRequest($format);
 
         if (!$data['id']) {
@@ -159,67 +161,34 @@ class TicketApiController extends ApiController {
         }
 
         $ticket = Ticket::lookup($data['id']);
-
+        
         if (!$ticket) {
             $this->response(404, _S("Ticket not found"));
         }
+        
+        if($ticket->isLocked()) {
+            $this->response(423, _S("Ticket locked"));
+            return;
+        }
 
-        /* ERROR while trying to update PRIORITY and TOPIC parameters because 
-        of $thisstaff variable. Possible Solutions:
-            1º Approach:
-                global $thisstaff;
-                $thisstaff = Staff::create();
-            2º Approach:
-                global $thisstaff;
-                $thisstaff = Staff::lookup($ticket->getStaffId());
-        PS: both have failded so far!!
-       */
-
-        //  Update ticket properties with received data, if present
-        if (isset($data['priorityId'])) { 
-
-            $priority = Priority::lookup($data['priorityId']);
-            if ($priority) {
-                 $vars = array(
-                    'priorityId' => $data['priorityId'], 
-                    'note' => "",
-                    'duedate' => "",
-                    'source' => "API",
-                    'topicId' => $ticket->getTopicId(), 
-                    'userId' => $ticket->getUserId()
-                );
-            
-                $errors = array();
-                if ($ticket->update($vars, $errors)) {
-                    $this->response(204, _S("Ticket updated successfully"));
-                } else {
-                    $this->exerr(500, _S($errors));
-                    return;
-                }
-            }else {
-                $this->exerr(400, 'Invalid priority ID');
+        $priority = null;
+        if (isset($data['priorityId'])) {
+            $priority = $data['priorityId'];
+            if (!is_numeric($priority) || !Priority::lookup($priority)) {
+                $this->response(400, _S(API::ERR_INVALID_QUERY_PARAMETER));
+                return;
+            }
+            $sql = 'UPDATE '.TICKET_CDATA_TABLE.' SET `priority` = '.$priority.' WHERE `ticket_id` = '.$ticket->getId();
+            if (!db_query($sql)) {
+                $this->response(500, _S(API::ERR_INTERNAL_SERVER_ERROR));
                 return;
             }
         }
-
+        
         if (isset($data['topicId'])) { 
             $topic = Topic::lookup($data['topicId']); 
             if ($topic) {
-                $vars = array(
-                    'topicId' => $data['topicId'],
-                    'note' => "",
-                    'duedate' => "",
-                    'source' => "API",
-                    'userId' => $ticket->getUserId()
-                );
-            
-                $errors = array();
-                if ($ticket->update($vars, $errors)) {
-                    $this->response(204, _S("Ticket updated successfully"));
-                } else {
-                    $this->exerr(500, _S($errors));
-                    return;
-                }
+                $ticket->topic = $topic;
             } else {
                 $this->exerr(400, 'Invalid topic ID');
                 return;
@@ -239,7 +208,7 @@ class TicketApiController extends ApiController {
            }     
         }
 
-        if (isset($data['deptId'])) { 
+        if (isset($data['deptId']) && $ticket->getDeptId() !== $data['deptId']) { 
            if (!$ticket->setDeptId($data['deptId'])) {
                 $this->response(400, _S(API::ERR_INVALID_QUERY_PARAMETER));
                 return;
@@ -259,7 +228,7 @@ class TicketApiController extends ApiController {
                 return;
             }
         }
-        
+                
         $statusId = null;
         if (isset($data['statusId'])) { 
             $statusId = $data['statusId'];
@@ -280,10 +249,10 @@ class TicketApiController extends ApiController {
             $vars = array(
                 'message' => $data['message'],
                 'userId' => $ticket->getUserId(), 
-                'origin' => 'web', 
+                'origin' => 'API', 
             );
             $errors = array();
-            if (!$ticket->postMessage($vars, 'web', true)) {
+            if (!$ticket->postMessage($vars, 'API', true)) {
                 $this->exerr(500, 'Unable to post message to ticket');
                 return;
             }
@@ -313,11 +282,15 @@ class TicketApiController extends ApiController {
                 return;
             }
         }
-    
+        
+        if ($errors) {
+            $this->exerr(400, _S($errors));
+        } 
+        
         if ($ticket->save()) {
             $this->response(204, _S("Ticket updated successfully"));
         } else {
-            $this->exerr(500, _S($errors));
+            $this->exerr(500, _S(API::ERR_INTERNAL_SERVER_ERROR));
         }
     }
 
@@ -343,8 +316,8 @@ class TicketApiController extends ApiController {
 
         $criteria = [];
         
-        if (isset($query['title'])) {
-            $criteria['subject'] = $query['title'];
+        if (isset($query['subject'])) {
+            $criteria['subject'] = $query['subject'];
         }
         if (isset($query['number'])) {
             $criteria['number'] = $query['number'];
@@ -439,13 +412,14 @@ class TicketApiController extends ApiController {
             // Add the ticket to 'results' if it checks all the criterias
             if ($matches) {
                 $results[] = [
-                    'ticket_id' => $ticket->getId(),
+                    'id' => $ticket->getId(),
+                    'number' => $ticket->getNumber(),
                     'subject' => $ticket->getSubject()
                 ];
             }
         }
 
-        if ($results) {
+        if ($results || empty($results)) {
             $resp = json_encode(array('tickets' => $results), JSON_PRETTY_PRINT);
             $this->response(200, $resp);
         } else {

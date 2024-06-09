@@ -50,6 +50,8 @@ class SlaApiController extends ApiController {
         
         if (empty($vars['name'])) {
             $errors['name'] = __('Name is required');
+        } elseif (SLA::getIdByName($vars['name']) !== 0) {
+            $errors['name'] = __('Name already exists');
         }
         if (empty($vars['grace_period'])) {
             $errors['grace_period'] = __('Grace period is required');

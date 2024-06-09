@@ -939,7 +939,7 @@ paths:
 
         To search for tickets, you can provide query parameters in the URL:
         
-        - `title`: The title or subject of the ticket.
+        - `subject`: The subject of the ticket.
         
         - `number`: The ticket number.
         
@@ -961,18 +961,17 @@ paths:
         If no parameter is provided, the search will return all tickets.
         If multiple parameters are provided, the search will return tickets that match all provided criteria.
 
-        NOTE: The IDs returned refer to the `number` property, not the internal IDs used by osTicket. For ease of
-        identification, the tickets' titles are provided alongside their respective IDs in the response.
+        NOTE: For ease of identification, the tickets' subject and number are provided alongside their respective ID in the response.
       operationId: getTicketIds
       security:
         - APIKeyAuth: []
       parameters:
         - in: query
-          name: title
+          name: subject
           schema:
             type: string
-          description: The title or subject of the ticket.
-          example: "Example Title"
+          description: The subject of the ticket.
+          example: "Example Subject"
         - in: query
           name: number
           schema:
@@ -1040,14 +1039,17 @@ paths:
                         title:
                           type: string
                     example:
-                      - id: 487102
-                        title: "Ticket A"
-                      - id: 557967
-                        title: "Ticket B"
-                      - id: 825773
-                        title: "Ticket C"
+                      - id: 47
+                        number: "487102"
+                        subject: "Ticket A"
+                      - id: 54
+                        number: "557967"
+                        subject: "Ticket B"
+                      - id: 93
+                        number: "825773"
+                        subject: "Ticket C"
                 description: |
-                  The IDs and titles of the tickets matching the search parameters.
+                  The IDs, subjects and numbers of the tickets matching the search parameters.
         '401':
           description: Valid API key required
         '500':
@@ -1158,7 +1160,7 @@ paths:
 
         To update a ticket, the request body must include the following parameters:
         
-        - `ticketId`: The ID of the ticket to be updated.
+        - `id`: The ID of the ticket to be updated.
         
         - `priorityId`: The priority level of the ticket. (optional)
         
@@ -1193,7 +1195,7 @@ paths:
             schema:
               type: object
               properties:
-                ticketId:
+                id:
                   type: integer
                   description: The ID of the ticket to be updated.
                 priorityId:

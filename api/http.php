@@ -25,6 +25,11 @@ $dispatcher = patterns('',
         url_post("^/departments\.(?P<format>xml|json|email)$", array('api.depts.php:DeptApiController','createDepartment')),
         url_put("^/departments\.(?P<format>xml|json|email)$", array('api.depts.php:DeptApiController','updateDepartment')),
         url_delete("^/departments", array('api.depts.php:DeptApiController','deleteDepartment')),
+        // SLAs
+        url_get("^/sla\.(xml|json|email)$", array('api.sla.php:SlaApiController','getSla')),
+        url_post("^/sla\.(?P<format>xml|json|email)$", array('api.sla.php:SlaApiController','createSla')),
+        url_put("^/sla\.(?P<format>xml|json|email)$", array('api.sla.php:SlaApiController','updateSla')),
+        url_delete("^/sla", array('api.sla.php:SlaApiController','deleteSla')),
         // Staff
         url_get("^/staff\.(xml|json|email)$", array('api.staff.php:StaffApiController','getStaffMembers')),
         url_post("^/staff\.(?P<format>xml|json|email)$", array('api.staff.php:StaffApiController','createStaffMember')),
@@ -36,27 +41,22 @@ $dispatcher = patterns('',
         url_put("^/teams\.(?P<format>xml|json|email)$", array('api.teams.php:TeamsApiController','updateTeam')),
         url_delete("^/teams", array('api.teams.php:TeamsApiController','deleteTeam')),
         // Tickets
-        url_post("^/tickets\.(?P<format>xml|json|email)$", array('api.tickets.php:TicketApiController','create')),
-        url_get("^/tickets\.xml|json|email", array('api.tickets.php:TicketApiController','getTickets')),        
+        url_get("^/tickets", array('api.tickets.php:TicketApiController','getTickets')),        
         url_put("^/tickets\.(?P<format>xml|json|email)$", array('api.tickets.php:TicketApiController','updateTicket')),
-        url_delete("^/tickets\.xml|json|email", array('api.tickets.php:TicketApiController','deleteTicket')),
-        // SLAs
-        url_get("^/sla\.xml|json|email$", array('api.sla.php:SlaApiController','getSla')),
-        url_post("^/sla\.(?P<format>xml|json|email)$", array('api.sla.php:SlaApiController','createSla')),
-        url_put("^/sla\.(?P<format>xml|json|email)$", array('api.sla.php:SlaApiController','updateSla')),
-        url_delete("^/sla\.xml|json|email", array('api.sla.php:SlaApiController','deleteSla')),
-        // Users
-        url_post("^/users\.(?P<format>xml|json|email)$", array('api.users.php:UserApiController','createUser')),
-        url_get("^/users\.xml|json|email$", array('api.users.php:UserApiController','getUsers')),
-        url_put("^/users\.(?P<format>xml|json|email)$", array('api.users.php:UserApiController','updateUser')),
-        url_delete("^/users\.xml|json|email", array('api.users.php:UserApiController','deleteUser')),
+        url_delete("^/tickets", array('api.tickets.php:TicketApiController','deleteTicket')),
+        url_post("^/tickets\.(?P<format>xml|json|email)$", array('api.tickets.php:TicketApiController','create')),
         //Ticket Priorities
-        url_get("^/priorities\.xml|json|email$", array('api.priorities.php:PriorityApiController','getPriorities')),
+        url_get("^/priorities\.(xml|json|email)$", array('api.priorities.php:PriorityApiController','getPriorities')),
         //Ticket Topics
-        url_get("^/topics\.xml|json|email$", array('api.topics.php:TopicApiController','getTopics')),
+        url_get("^/topics\.(xml|json|email)$", array('api.topics.php:TopicApiController','getTopics')),
         url_post("^/topics\.(?P<format>xml|json|email)$", array('api.topics.php:TopicApiController','createTopic')),
         url_put("^/topics\.(?P<format>xml|json|email)$", array('api.topics.php:TopicApiController','updateTopic')),
-        url_delete("^/topics\.xml|json|email", array('api.topics.php:TopicApiController','deleteTopic'))
+        url_delete("^/topics", array('api.topics.php:TopicApiController','deleteTopic')),
+        // Users
+        url_get("^/users\.(xml|json|email)$", array('api.users.php:UserApiController','getUsers')),
+        url_post("^/users\.(?P<format>xml|json|email)$", array('api.users.php:UserApiController','createUser')),
+        url_put("^/users\.(?P<format>xml|json|email)$", array('api.users.php:UserApiController','updateUser')),
+        url_delete("^/users", array('api.users.php:UserApiController','deleteUser'))
     );
 
 // Send api signal so backend can register endpoints
