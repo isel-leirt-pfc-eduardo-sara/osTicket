@@ -47,6 +47,8 @@ $dispatcher = patterns('',
         url_post("^/tickets\.(?P<format>xml|json|email)$", array('api.tickets.php:TicketApiController','create')),
         //Ticket Priorities
         url_get("^/priorities\.(xml|json|email)$", array('api.priorities.php:PriorityApiController','getPriorities')),
+        //Ticket Status
+        url_get("^/status\.(xml|json|email)$", array('api.status.php:StatusApiController','getStatuses')),
         //Ticket Topics
         url_get("^/topics\.(xml|json|email)$", array('api.topics.php:TopicApiController','getTopics')),
         url_post("^/topics\.(?P<format>xml|json|email)$", array('api.topics.php:TopicApiController','createTopic')),
