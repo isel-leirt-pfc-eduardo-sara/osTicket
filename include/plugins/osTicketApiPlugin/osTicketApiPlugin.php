@@ -1,6 +1,7 @@
 <?php
 
 include_once INCLUDE_DIR.'bootstrap.php';
+require_once(INCLUDE_DIR."/class.plugin.php");
 require 'config.php';
 
 define('PLUGIN_FILES_DIR', INCLUDE_DIR.'plugins/osTicketApiPlugin/files/');
@@ -11,6 +12,7 @@ define('EXPECTED_VERSION', '1.18');
 define('SESSION_PREVIOUS_STATE_PLUGIN_PREFIX', 'previousActiveStatePlugin_');
 
 class osTicketApiPlugin extends Plugin {
+    const ERR_PLUGIN_DISABLED = 'osTicket-API Plugin is currently disabled';
     var $config_class = 'osTicketApiPluginConfig'; // Necessary for the plugin system to find the configuration
     
     function bootstrap() {
@@ -21,9 +23,8 @@ class osTicketApiPlugin extends Plugin {
                 ."Plugin instance deleted."
             );
         }
-        if ($this->isFirstRun()) {
-            $this->doFirstTimeSetup();
-        }
+        $this->integrate();
+        $this->cleanup();
     }
 
      /**
@@ -35,8 +36,8 @@ class osTicketApiPlugin extends Plugin {
         $currentlyActive = parent::isActive();
         $previouslyActive = $this->getCurrentActiveStatePlugin();
         if ($previouslyActive !== $currentlyActive) {
-        $this->handleActivationChange($currentlyActive);
-        $this->setCurrentActiveStatePlugin($currentlyActive);
+            $this->handleActivationChange($currentlyActive);
+            $this->setCurrentActiveStatePlugin($currentlyActive);
         }
         return $currentlyActive;
     }
@@ -49,7 +50,7 @@ class osTicketApiPlugin extends Plugin {
     */
     private function handleActivationChange($currentlyActive) {
         error_log("Plugin is being " . ($currentlyActive ? "activated" :
-        "disactivated") . ".");
+        "deactivated") . ".");
         if ($currentlyActive) {
             $this->enablePlugin();
         } else {
@@ -63,41 +64,42 @@ class osTicketApiPlugin extends Plugin {
     * @return void
     */
     function enablePlugin() {
-        $this->doFirstTimeSetup();
         global $msg;
-        $msg = 'Plugin is enabled.';
+        $msg = 'Plugin enabled successfully.';
     }
+
     /*
     /**
      * Logic to be executed when the plugin is disabled.
      * @return void
      */
     function disablePlugin() { 
-        $this->removePluginFiles();
-        $this->undoPluginCodeInsertions();
         global $msg;
-       
         $msg = 'Plugin disabled successfully.';
-            
-    }
-
-    function isFirstRun() {
-        $firstRun = $this->getConfig()->get('first_run');
-        if ($firstRun) {
-            $this->getConfig()->set('first_run', false);
-            return true;
-        }
-        return false;
     }
     
-    function doFirstTimeSetup() {
-        $this->addPluginFiles();
-        $this->insertPluginCode();
-        
-        global $msg;
-        $msg = 'First run configuration completed';
+    function integrate() {
+        $deploy = $this->getConfig()->get('integrate');
+        if ($deploy) {
+            $this->getConfig()->set('integrate', false);
+            $this->addPluginFiles();
+            $this->insertPluginCode();
+            global $msg;
+            $msg = 'Plugin code integrated successfully.';
+        }
     }
-
+    
+    function cleanup() {
+        $cleanup = $this->getConfig()->get('cleanup');
+        if ($cleanup) {
+            $this->getConfig()->set('cleanup', false);
+            $this->removePluginFiles();
+            $this->undoPluginCodeInsertions();
+            global $msg;
+            $msg = 'Plugin code removed successfully.';
+        }
+    }
+    
     function addPluginFiles() {
         $this->recursiveCopy(ADD_DIR, ROOT_DIR);
 
@@ -200,7 +202,7 @@ class osTicketApiPlugin extends Plugin {
 
         // Replace the temporary file with the destination file
         if (!rename($tempFile, $dstFile)) {
-            throw new Exception("Could not replace temporary file with destination file.");
+            throw new Exception("Could not replace temporary file with destination file. $dstFile");
         }
     }
 

@@ -317,13 +317,18 @@ class ApiController extends Controller {
     }
 
     /**
-    * Ensures that the API key is valid before calling the provided function
-    * with optional parameters. It serves as a generic wrapper for executing
-    * requests that require API key validation.
+    * Executes the provided function with optional parameters, ensuring
+    * that the "osTicket-API Plugin" is active and the API key is valid.
     */
     function validateAndExecute($func, $params=null) {
-        $this->requireApiKey();
-        $func($params);
+        $sql = 'SELECT isactive FROM '.PLUGIN_TABLE.' WHERE name = "osTicket-API Plugin"';
+        if (db_query($sql)->fetch_assoc()['isactive'] == 1) {
+            $this->requireApiKey();
+            $func($params);
+        } else {
+            $this->response(403, _S(osTicketApiPlugin::ERR_PLUGIN_DISABLED));
+            return;
+        }
     }
 
     protected function debug($subj, $msg) {

@@ -119,7 +119,9 @@ paths:
                       name: Department C
                 description: The IDs and names of the available departments.
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
     post:
@@ -178,7 +180,9 @@ paths:
         '400':
           $ref: "#/components/responses/BadRequest2"
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
     put:
@@ -233,7 +237,9 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest3'
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '404':
           description: Department not found
         '500':
@@ -262,7 +268,9 @@ paths:
         '400':
           description: Invalid query parameter
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '404':
           description: Department not found
         '500':
@@ -312,7 +320,9 @@ paths:
                 description: |
                   The IDs and names of the available SLAs.
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
     post:
@@ -361,7 +371,9 @@ paths:
         '400':
           $ref: "#/components/responses/BadRequest2"
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
     put:
@@ -409,7 +421,9 @@ paths:
         '400':
           $ref: '#/components/responses/BadRequest3'
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '404':
           description: SLA not found
         '500':
@@ -438,7 +452,9 @@ paths:
         '400':
           description: Invalid query parameter
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '404':
           description: SLA not found
         '500':
@@ -498,7 +514,9 @@ paths:
                 description: |
                   The IDs and names of the available staff members.
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
     post:
@@ -595,7 +613,9 @@ paths:
                 invalid_dept_id:
                   value: "dept_id: Department not found"
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
     put:
@@ -682,7 +702,9 @@ paths:
                 invalid_id:
                   value: "id: Staff member not found"
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '404':
           description: Staff member not found
         '500':
@@ -711,7 +733,9 @@ paths:
         '400':
           description: Invalid query parameter
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '404':
           description: Staff member not found
         '500':
@@ -759,7 +783,9 @@ paths:
                 description: |
                   The IDs and names of the available teams.
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
     post:
@@ -826,7 +852,9 @@ paths:
                 invalid_staff_member:
                   value: "members: No such agent"
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
     put:
@@ -894,7 +922,9 @@ paths:
                 invalid_staff_member:
                   value: "members: No such agent"
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '404':
           description: Team not found
         '500':
@@ -923,7 +953,9 @@ paths:
         '400':
           description: Invalid query parameter
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '404':
           description: Team not found
         '500':
@@ -1051,7 +1083,9 @@ paths:
                 description: |
                   The IDs, subjects and numbers of the tickets matching the search parameters.
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
     post:
@@ -1148,7 +1182,9 @@ paths:
         '400':
           description: Syntax error, malformed JSON
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
     put:
@@ -1260,7 +1296,9 @@ paths:
         '400':
           $ref: "#/components/responses/BadRequest"
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '404':
           description: Ticket not found
         '423':
@@ -1293,7 +1331,9 @@ paths:
         '400':
           description: Invalid query parameter
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '404':
           description: Ticket not found
         '500':
@@ -1346,7 +1386,9 @@ paths:
                 description: |
                   The IDs and names of the available priorities.
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
   /https://host/osTicketBase/http.php/status.json:
@@ -1395,7 +1437,9 @@ paths:
                 description: |
                   The IDs and names of the available statuses.
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
   /https://host/osTicketBase/http.php/topics.json:
@@ -1442,7 +1486,9 @@ paths:
                 description: |
                   The IDs and names of the available topics.
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
     post:
@@ -1456,7 +1502,7 @@ paths:
         
         - `topic`: The name of the topic.
         
-        - `isPublic`: A boolean value indicating whether the topic is publicly visible.
+        - `ispublic`: A boolean value indicating whether the topic is publicly visible.
         
         - `dept_id`: The ID of the department associated with this topic. (optional)
         
@@ -1480,7 +1526,7 @@ paths:
                 topic:
                   type: string
                   description: The name of the topic.
-                isPublic:
+                ispublic:
                   type: boolean
                   description: A boolean value indicating whether the topic is publicly visible.
                 dept_id:
@@ -1500,7 +1546,7 @@ paths:
                   example: 1
                   required:
                     - topic
-                    - isPublic
+                    - ispublic
       responses:
         '201':
           description: Topic created successfully
@@ -1513,7 +1559,9 @@ paths:
         '400':
           description: Syntax error, malformed JSON
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
     put:
@@ -1580,8 +1628,7 @@ paths:
           description: Topic updated successfully
         '400':
           $ref: "#/components/responses/BadRequest"
-        '401':
-          description: Valid API key required
+
         '500':
           description: Internal server error
     delete:
@@ -1608,7 +1655,9 @@ paths:
         '400':
           description: Invalid query parameter
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '404':
           description: Topic not found
         '500':
@@ -1658,7 +1707,9 @@ paths:
                 description: |
                   The IDs and names of the available users.
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
     post:
@@ -1713,7 +1764,9 @@ paths:
         '400':
           description: Syntax error, malformed JSON
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           description: Internal server error
     put:
@@ -1725,7 +1778,7 @@ paths:
 
         To update a user, the request body may include the following parameters:
         
-        - `userId`: The ID of the user to update.
+        - `id`: The ID of the user to update.
         
         - `name`: The user's name. (optional)
         
@@ -1743,7 +1796,7 @@ paths:
             schema:
               type: object
               properties:
-                userId:
+                id:
                   type: integer
                   description: The ID of the user to update.
                 name:
@@ -1754,14 +1807,16 @@ paths:
                   format: email
                   description: The user's email address.
               required:
-                - userId
+                - id
       responses:
         '204':
           description: User updated successfully
         '400':
           $ref: "#/components/responses/BadRequest"
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '404':
           description: User not found
         '500':
@@ -1790,7 +1845,9 @@ paths:
         '400':
           description: Invalid query parameter
         '401':
-          description: Valid API key required
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '404':
           description: User not found
         '500':
@@ -1802,6 +1859,10 @@ components:
       in: header
       name: X-API-Key
   responses:
+    ValidAPIKeyRequired:
+      description: Valid API key required
+    DisabledPlugin:
+      description: osTicket-API Plugin is currently disabled
     BadRequest:
       description: Syntax error, missing ID or missing updatable properties
       content:
