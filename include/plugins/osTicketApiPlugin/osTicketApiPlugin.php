@@ -79,8 +79,8 @@ class osTicketApiPlugin extends Plugin {
     }
     
     function integrate() {
-        $deploy = $this->getConfig()->get('integrate');
-        if ($deploy) {
+        $integrate = $this->getConfig()->get('integrate');
+        if ($integrate) {
             $this->getConfig()->set('integrate', false);
             $this->addPluginFiles();
             $this->insertPluginCode();
@@ -202,7 +202,7 @@ class osTicketApiPlugin extends Plugin {
 
         // Replace the temporary file with the destination file
         if (!rename($tempFile, $dstFile)) {
-            throw new Exception("Could not replace temporary file with destination file. $dstFile");
+            throw new Exception("Could not replace temporary file with destination file.");
         }
     }
 
@@ -249,57 +249,54 @@ class osTicketApiPlugin extends Plugin {
     }
 
     function regexUndoInsert($srcJson, $dstFile) {
-         // Read original file content from destination file
+        // Read original file content from destination file
         $content = @file_get_contents($dstFile);
         if ($content === false) {
             throw new Exception("Could not read file: '".$dstFile."'");
         }
-    
+
         // Read the previous insertions from the JSON file
         $removalsJson = @file_get_contents($srcJson);
         if ($removalsJson === false) {
             throw new Exception("Could not read previous insertions JSON file: '".$srcJson."'");
         }
-    
+
         // Decoding the JSON string into an associative array
         $removals = json_decode($removalsJson, true);
         if ($removals === null) {
             throw new Exception("Error decoding JSON file: '".$srcJson."'");
         }
-    
-         // Validate JSON structure
+
+        // Validate JSON structure
         foreach ($removals as $index => $removal) {
             if (!isset($removal['pattern']) || !isset($removal['newLines'])) {
                 throw new Exception("Invalid JSON structure at index ".$index);
             }
         }
-    
+
         // Process each insertion removal
         foreach ($removals as $removal) {
-            $pattern = $removal['pattern'];
             $newLines = $removal['newLines'];
-            
-            // Converts the array of new lines to a string
+
+            // Convert the array of new lines to a string
             $newLinesString = implode(PHP_EOL, $newLines);
-    
+
             // Remove only if the inserted lines are still present in the file
             if (strpos($content, $newLinesString) !== false) {
-                
-                // Remove newlines after matching pattern
-                $content = preg_replace(
-                    '/'.preg_quote($newLinesString, '/').'/', 
-                    '', 
-                    $content,
-                    1 // Limit 1 substitution per match
-                );
-    
+                // Create a regex pattern to match the entire line with surrounding newlines
+                $escapedLines = preg_quote($newLinesString, '/');
+                $pattern = "/^[\r\n]*{$escapedLines}[\r\n]*/m";
+
+                // Remove the matched lines including surrounding newlines
+                $content = preg_replace($pattern, '', $content, 1);
+
                 if ($content === null) {
-                    throw new Exception("Regex error occurred while processing pattern: '".$pattern."'");
+                    throw new Exception("Regex error occurred while processing lines: '".$newLinesString."'");
                 }
             }
         }
-    
-        // Write the modified content back to the detination file
+
+        // Write the modified content back to the destination file
         if (file_put_contents($dstFile, $content) === false) {
             throw new Exception("Unable to write to file: '".$dstFile."'");
         }

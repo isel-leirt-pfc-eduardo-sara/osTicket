@@ -123,7 +123,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     post:
       tags:
         - Departments
@@ -184,7 +184,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     put:
       tags:
         - Departments
@@ -243,7 +243,7 @@ paths:
         '404':
           description: Department not found
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     delete:
       tags:
         - Departments
@@ -274,7 +274,7 @@ paths:
         '404':
           description: Department not found
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
   /https://host/osTicketBase/http.php/sla.json:
     description: This resource handles all SLA-related operations
     get:
@@ -324,7 +324,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     post:
       tags:
         - SLA (Service-Level Agreement)
@@ -375,7 +375,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     put:
       tags:
         - SLA (Service-Level Agreement)
@@ -427,7 +427,7 @@ paths:
         '404':
           description: SLA not found
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     delete:
       tags:
         - SLA (Service-Level Agreement)
@@ -458,7 +458,7 @@ paths:
         '404':
           description: SLA not found
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
   /https://host/osTicketBase/http.php/staff.json:
     description: This resource handles all staff-related operations
     get:
@@ -518,7 +518,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     post:
       tags:
         - Staff
@@ -617,7 +617,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     put:
       tags:
       - Staff
@@ -708,7 +708,7 @@ paths:
         '404':
           description: Staff member not found
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     delete:
       tags:
         - Staff
@@ -739,7 +739,7 @@ paths:
         '404':
           description: Staff member not found
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
   /https://host/osTicketBase/http.php/teams.json:
     description: This resource handles all team-related operations
     get:
@@ -787,7 +787,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     post:
       tags:
         - Teams
@@ -856,7 +856,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     put:
       tags:
         - Teams
@@ -928,7 +928,7 @@ paths:
         '404':
           description: Team not found
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     delete:
       tags:
         - Teams
@@ -959,7 +959,7 @@ paths:
         '404':
           description: Team not found
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
   /https://host/osTicketBase/http.php/tickets.json:
     description: This resource handles all ticket-related operations
     get:
@@ -1087,7 +1087,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     post:
       tags:
         - Tickets
@@ -1186,7 +1186,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     put:
       tags:
         - Tickets
@@ -1304,7 +1304,7 @@ paths:
         '423':
           description: Ticket locked
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     delete:
       tags:
         - Tickets
@@ -1337,7 +1337,7 @@ paths:
         '404':
           description: Ticket not found
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
   /https://host/osTicketBase/http.php/priorities.json:
     description: This resource handles all priority-related operations
     get:
@@ -1390,7 +1390,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
   /https://host/osTicketBase/http.php/status.json:
     description: This resource handles all status-related operations
     get:
@@ -1441,7 +1441,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
   /https://host/osTicketBase/http.php/topics.json:
     description: This resource handles all topic-related operations
     get:
@@ -1490,7 +1490,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     post:
       tags:
         - Ticket Topics
@@ -1563,7 +1563,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     put:
       tags:
         - Ticket Topics
@@ -1630,7 +1630,7 @@ paths:
           $ref: "#/components/responses/BadRequest"
 
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     delete:
       tags:
         - Ticket Topics
@@ -1661,7 +1661,7 @@ paths:
         '404':
           description: Topic not found
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
   /https://host/osTicketBase/http.php/users.json:
     description: This resource handles all user-related operations
     get:
@@ -1711,7 +1711,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     post:
       tags:
         - Users
@@ -1768,7 +1768,7 @@ paths:
         '403':
           $ref: "#/components/responses/DisabledPlugin"
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     put:
       tags:
       - Users
@@ -1820,7 +1820,7 @@ paths:
         '404':
           description: User not found
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
     delete:
       tags:
         - Users
@@ -1851,7 +1851,7 @@ paths:
         '404':
           description: User not found
         '500':
-          description: Internal server error
+          $ref: "#/components/responses/InternalServerError"
 components:
   securitySchemes:
     APIKeyAuth:
@@ -1902,3 +1902,5 @@ components:
               value: Missing required ID
             invalid_name:
               value: "name: Department already exists"
+    InternalServerError:
+      description: Internal server error
