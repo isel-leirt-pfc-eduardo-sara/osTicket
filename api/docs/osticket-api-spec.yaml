@@ -1628,7 +1628,10 @@ paths:
           description: Topic updated successfully
         '400':
           $ref: "#/components/responses/BadRequest"
-
+        '401':
+          $ref: "#/components/responses/ValidAPIKeyRequired"
+        '403':
+          $ref: "#/components/responses/DisabledPlugin"
         '500':
           $ref: "#/components/responses/InternalServerError"
     delete:
